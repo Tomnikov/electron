@@ -18,27 +18,30 @@ describe('BrowserWindow with affinity module', () => {
     app.allowRendererProcessReuse = true;
   });
 
-  async function createWindowWithWebPrefs (webPrefs: WebPreferences) {
+  async function createWindowWithWebPrefs(webPrefs: WebPreferences) {
     const w = new BrowserWindow({
       show: false,
       width: 400,
       height: 400,
-      webPreferences: webPrefs || {}
+      webPreferences: webPrefs || {},
     });
     await w.loadFile(path.join(fixtures, 'api', 'blank.html'));
     return w;
   }
 
-  function testAffinityProcessIds (name: string, webPreferences: WebPreferences = {}) {
+  function testAffinityProcessIds(name: string, webPreferences: WebPreferences = {}) {
     describe(name, () => {
       let mAffinityWindow: BrowserWindow;
       before(async () => {
-        mAffinityWindow = await createWindowWithWebPrefs({ affinity: myAffinityName, ...webPreferences });
+        mAffinityWindow = await createWindowWithWebPrefs({
+          affinity: myAffinityName,
+          ...webPreferences,
+        });
       });
 
       after(async () => {
         await closeWindow(mAffinityWindow, { assertNotWindows: false });
-        mAffinityWindow = null as unknown as BrowserWindow;
+        mAffinityWindow = (null as unknown) as BrowserWindow;
       });
 
       it('should have a different process id than a default window', async () => {
@@ -51,7 +54,10 @@ describe('BrowserWindow with affinity module', () => {
       });
 
       it(`should have a different process id than a window with a different affinity '${anotherAffinityName}'`, async () => {
-        const w = await createWindowWithWebPrefs({ affinity: anotherAffinityName, ...webPreferences });
+        const w = await createWindowWithWebPrefs({
+          affinity: anotherAffinityName,
+          ...webPreferences,
+        });
         const affinityID = mAffinityWindow.webContents.getOSProcessId();
         const wcID = w.webContents.getOSProcessId();
 
@@ -69,7 +75,10 @@ describe('BrowserWindow with affinity module', () => {
       });
 
       it(`should have the same OS process id than a window with an equivalent affinity '${myAffinityNameUpper}' (case insensitive)`, async () => {
-        const w = await createWindowWithWebPrefs({ affinity: myAffinityNameUpper, ...webPreferences });
+        const w = await createWindowWithWebPrefs({
+          affinity: myAffinityNameUpper,
+          ...webPreferences,
+        });
         const affinityID = mAffinityWindow.webContents.getOSProcessId();
         const wcID = w.webContents.getOSProcessId();
 
@@ -80,7 +89,9 @@ describe('BrowserWindow with affinity module', () => {
   }
 
   testAffinityProcessIds(`BrowserWindow with an affinity '${myAffinityName}'`);
-  testAffinityProcessIds(`BrowserWindow with an affinity '${myAffinityName}' and sandbox enabled`, { sandbox: true });
+  testAffinityProcessIds(`BrowserWindow with an affinity '${myAffinityName}' and sandbox enabled`, {
+    sandbox: true,
+  });
   testAffinityProcessIds(`BrowserWindow with an affinity '${myAffinityName}' and nativeWindowOpen enabled`, { nativeWindowOpen: true });
 
   describe('BrowserWindow with an affinity : nodeIntegration=false', () => {
@@ -88,7 +99,7 @@ describe('BrowserWindow with affinity module', () => {
     const affinityWithNodeTrue = 'affinityWithNodeTrue';
     const affinityWithNodeFalse = 'affinityWithNodeFalse';
 
-    function testNodeIntegration (present: boolean) {
+    function testNodeIntegration(present: boolean) {
       return new Promise<void>((resolve) => {
         ipcMain.once('answer', (event, typeofProcess, typeofBuffer) => {
           if (present) {
@@ -109,8 +120,8 @@ describe('BrowserWindow with affinity module', () => {
         createWindowWithWebPrefs({
           affinity: affinityWithNodeTrue,
           preload,
-          nodeIntegration: false
-        })
+          nodeIntegration: false,
+        }),
       ]);
       await closeWindow(w, { assertNotWindows: false });
     });
@@ -120,21 +131,18 @@ describe('BrowserWindow with affinity module', () => {
         createWindowWithWebPrefs({
           affinity: affinityWithNodeTrue,
           preload,
-          nodeIntegration: false
-        })
+          nodeIntegration: false,
+        }),
       ]);
       const [, w2] = await Promise.all([
         testNodeIntegration(true),
         createWindowWithWebPrefs({
           affinity: affinityWithNodeTrue,
           preload,
-          nodeIntegration: true
-        })
+          nodeIntegration: true,
+        }),
       ]);
-      await Promise.all([
-        closeWindow(w1, { assertNotWindows: false }),
-        closeWindow(w2, { assertNotWindows: false })
-      ]);
+      await Promise.all([closeWindow(w1, { assertNotWindows: false }), closeWindow(w2, { assertNotWindows: false })]);
     });
 
     it('enables node integration when specified to true', async () => {
@@ -143,8 +151,8 @@ describe('BrowserWindow with affinity module', () => {
         createWindowWithWebPrefs({
           affinity: affinityWithNodeFalse,
           preload,
-          nodeIntegration: true
-        })
+          nodeIntegration: true,
+        }),
       ]);
       await closeWindow(w, { assertNotWindows: false });
     });
@@ -155,21 +163,18 @@ describe('BrowserWindow with affinity module', () => {
         createWindowWithWebPrefs({
           affinity: affinityWithNodeFalse,
           preload,
-          nodeIntegration: true
-        })
+          nodeIntegration: true,
+        }),
       ]);
       const [, w2] = await Promise.all([
         testNodeIntegration(false),
         createWindowWithWebPrefs({
           affinity: affinityWithNodeFalse,
           preload,
-          nodeIntegration: false
-        })
+          nodeIntegration: false,
+        }),
       ]);
-      await Promise.all([
-        closeWindow(w1, { assertNotWindows: false }),
-        closeWindow(w2, { assertNotWindows: false })
-      ]);
+      await Promise.all([closeWindow(w1, { assertNotWindows: false }), closeWindow(w2, { assertNotWindows: false })]);
     });
   });
 });

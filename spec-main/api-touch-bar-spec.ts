@@ -3,7 +3,18 @@ import { BrowserWindow, TouchBar } from 'electron/main';
 import { closeWindow } from './window-helpers';
 import { expect } from 'chai';
 
-const { TouchBarButton, TouchBarColorPicker, TouchBarGroup, TouchBarLabel, TouchBarOtherItemsProxy, TouchBarPopover, TouchBarScrubber, TouchBarSegmentedControl, TouchBarSlider, TouchBarSpacer } = TouchBar;
+const {
+  TouchBarButton,
+  TouchBarColorPicker,
+  TouchBarGroup,
+  TouchBarLabel,
+  TouchBarOtherItemsProxy,
+  TouchBarPopover,
+  TouchBarScrubber,
+  TouchBarSegmentedControl,
+  TouchBarSlider,
+  TouchBarSpacer,
+} = TouchBar;
 
 describe('TouchBar module', () => {
   it('throws an error when created without an options object', () => {
@@ -34,7 +45,9 @@ describe('TouchBar module', () => {
 
   it('throws an error if multiple OtherItemProxy items are added', () => {
     expect(() => {
-      const touchBar = new TouchBar({ items: [new TouchBarOtherItemsProxy(), new TouchBarOtherItemsProxy()] });
+      const touchBar = new TouchBar({
+        items: [new TouchBarOtherItemsProxy(), new TouchBarOtherItemsProxy()],
+      });
       touchBar.toString();
     }).to.throw('Must only have one OtherItemsProxy per TouchBar');
   });
@@ -57,39 +70,49 @@ describe('TouchBar module', () => {
     afterEach(async () => {
       window.setTouchBar(null);
       await closeWindow(window);
-      window = null as unknown as BrowserWindow;
+      window = (null as unknown) as BrowserWindow;
     });
 
     it('can be added to and removed from a window', () => {
       const label = new TouchBarLabel({ label: 'bar' });
       const touchBar = new TouchBar({
         items: [
-          new TouchBarButton({ label: 'foo', backgroundColor: '#F00', click: () => { } }),
+          new TouchBarButton({ label: 'foo', backgroundColor: '#F00', click: () => {} }),
           new TouchBarButton({
             icon: path.join(__dirname, 'fixtures', 'assets', 'logo.png'),
             iconPosition: 'right',
-            click: () => { }
+            click: () => {},
           }),
-          new TouchBarColorPicker({ selectedColor: '#F00', change: () => { } }),
-          new TouchBarGroup({ items: new TouchBar({ items: [new TouchBarLabel({ label: 'hello' })] }) }),
+          new TouchBarColorPicker({ selectedColor: '#F00', change: () => {} }),
+          new TouchBarGroup({
+            items: new TouchBar({ items: [new TouchBarLabel({ label: 'hello' })] }),
+          }),
           label,
           new TouchBarOtherItemsProxy(),
-          new TouchBarPopover({ items: new TouchBar({ items: [new TouchBarButton({ label: 'pop' })] }) }),
-          new TouchBarSlider({ label: 'slide', value: 5, minValue: 2, maxValue: 75, change: () => { } }),
+          new TouchBarPopover({
+            items: new TouchBar({ items: [new TouchBarButton({ label: 'pop' })] }),
+          }),
+          new TouchBarSlider({
+            label: 'slide',
+            value: 5,
+            minValue: 2,
+            maxValue: 75,
+            change: () => {},
+          }),
           new TouchBarSpacer({ size: 'large' }),
           new TouchBarSegmentedControl({
             segmentStyle: 'capsule',
             segments: [{ label: 'baz', enabled: false }],
-            selectedIndex: 5
+            selectedIndex: 5,
           }),
           new TouchBarSegmentedControl({ segments: [] }),
           new TouchBarScrubber({
             items: [{ label: 'foo' }, { label: 'bar' }, { label: 'baz' }],
             selectedStyle: 'outline',
             mode: 'fixed',
-            showArrowButtons: true
-          })
-        ]
+            showArrowButtons: true,
+          }),
+        ],
       });
       const escapeButton = new TouchBarButton({ label: 'foo' });
       window.setTouchBar(touchBar);
@@ -106,7 +129,7 @@ describe('TouchBar module', () => {
         label: 'bar',
         click: () => {
           done();
-        }
+        },
       });
       const touchBar = new TouchBar({ items: [button] });
       window.setTouchBar(touchBar);
@@ -118,7 +141,7 @@ describe('TouchBar module', () => {
         label: 'bar',
         click: () => {
           done();
-        }
+        },
       });
       const touchBar = new TouchBar({ escapeItem: button });
       window.setTouchBar(touchBar);

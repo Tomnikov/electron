@@ -6,7 +6,18 @@ import * as os from 'os';
 import * as qs from 'querystring';
 import * as http from 'http';
 import { AddressInfo } from 'net';
-import { app, BrowserWindow, BrowserView, ipcMain, OnBeforeSendHeadersListenerDetails, protocol, screen, webContents, session, WebContents } from 'electron/main';
+import {
+  app,
+  BrowserWindow,
+  BrowserView,
+  ipcMain,
+  OnBeforeSendHeadersListenerDetails,
+  protocol,
+  screen,
+  webContents,
+  session,
+  WebContents,
+} from 'electron/main';
 
 import { emittedOnce, emittedUntil } from './events-helpers';
 import { ifit, ifdescribe, defer, delay } from './spec-helpers';
@@ -40,7 +51,7 @@ const expectBoundsEqual = (actual: any, expected: any) => {
 };
 
 const isBeforeUnload = (event: Event, level: number, message: string) => {
-  return (message === 'beforeunload');
+  return message === 'beforeunload';
 };
 
 describe('BrowserWindow module', () => {
@@ -51,7 +62,7 @@ describe('BrowserWindow module', () => {
           show: false,
           // apparently void 0 had different behaviour from undefined in the
           // issue that this test is supposed to catch.
-          webContents: void 0 // eslint-disable-line no-void
+          webContents: void 0, // eslint-disable-line no-void
         } as any);
         w.destroy();
       }).not.to.throw();
@@ -60,7 +71,9 @@ describe('BrowserWindow module', () => {
     ifit(process.platform === 'linux')('does not crash when setting large window icons', async () => {
       const appPath = path.join(__dirname, 'spec-main', 'fixtures', 'apps', 'xwindow-icon');
       const appProcess = childProcess.spawn(process.execPath, [appPath]);
-      await new Promise((resolve) => { appProcess.once('exit', resolve); });
+      await new Promise((resolve) => {
+        appProcess.once('exit', resolve);
+      });
     });
   });
 
@@ -84,13 +97,13 @@ describe('BrowserWindow module', () => {
   });
 
   describe('BrowserWindow.close()', () => {
-    let w = null as unknown as BrowserWindow;
+    let w = (null as unknown) as BrowserWindow;
     beforeEach(() => {
       w = new BrowserWindow({ show: false, webPreferences: { nodeIntegration: true } });
     });
     afterEach(async () => {
       await closeWindow(w);
-      w = null as unknown as BrowserWindow;
+      w = (null as unknown) as BrowserWindow;
     });
 
     it('should emit unload handler', async () => {
@@ -111,35 +124,37 @@ describe('BrowserWindow module', () => {
     });
 
     describe('when invoked synchronously inside navigation observer', () => {
-      let server: http.Server = null as unknown as http.Server;
-      let url: string = null as unknown as string;
+      let server: http.Server = (null as unknown) as http.Server;
+      let url: string = (null as unknown) as string;
 
       before((done) => {
-        server = http.createServer((request, response) => {
-          switch (request.url) {
-            case '/net-error':
-              response.destroy();
-              break;
-            case '/301':
-              response.statusCode = 301;
-              response.setHeader('Location', '/200');
-              response.end();
-              break;
-            case '/200':
-              response.statusCode = 200;
-              response.end('hello');
-              break;
-            case '/title':
-              response.statusCode = 200;
-              response.end('<title>Hello</title>');
-              break;
-            default:
-              throw new Error(`unsupported endpoint: ${request.url}`);
-          }
-        }).listen(0, '127.0.0.1', () => {
-          url = 'http://127.0.0.1:' + (server.address() as AddressInfo).port;
-          done();
-        });
+        server = http
+          .createServer((request, response) => {
+            switch (request.url) {
+              case '/net-error':
+                response.destroy();
+                break;
+              case '/301':
+                response.statusCode = 301;
+                response.setHeader('Location', '/200');
+                response.end();
+                break;
+              case '/200':
+                response.statusCode = 200;
+                response.end('hello');
+                break;
+              case '/title':
+                response.statusCode = 200;
+                response.end('<title>Hello</title>');
+                break;
+              default:
+                throw new Error(`unsupported endpoint: ${request.url}`);
+            }
+          })
+          .listen(0, '127.0.0.1', () => {
+            url = 'http://127.0.0.1:' + (server.address() as AddressInfo).port;
+            done();
+          });
       });
 
       after(() => {
@@ -153,13 +168,13 @@ describe('BrowserWindow module', () => {
         { name: 'did-stop-loading', path: '/200' },
         { name: 'did-finish-load', path: '/200' },
         { name: 'did-frame-finish-load', path: '/200' },
-        { name: 'did-fail-load', path: '/net-error' }
+        { name: 'did-fail-load', path: '/net-error' },
       ];
 
       for (const { name, path } of events) {
         it(`should not crash when closed during ${name}`, async () => {
           const w = new BrowserWindow({ show: false });
-          w.webContents.once((name as any), () => {
+          w.webContents.once(name as any, () => {
             w.close();
           });
           const destroyed = emittedOnce(w.webContents, 'destroyed');
@@ -171,13 +186,13 @@ describe('BrowserWindow module', () => {
   });
 
   describe('window.close()', () => {
-    let w = null as unknown as BrowserWindow;
+    let w = (null as unknown) as BrowserWindow;
     beforeEach(() => {
       w = new BrowserWindow({ show: false, webPreferences: { nodeIntegration: true } });
     });
     afterEach(async () => {
       await closeWindow(w);
-      w = null as unknown as BrowserWindow;
+      w = (null as unknown) as BrowserWindow;
     });
 
     it('should emit unload event', async () => {
@@ -197,13 +212,13 @@ describe('BrowserWindow module', () => {
   });
 
   describe('BrowserWindow.destroy()', () => {
-    let w = null as unknown as BrowserWindow;
+    let w = (null as unknown) as BrowserWindow;
     beforeEach(() => {
       w = new BrowserWindow({ show: false, webPreferences: { nodeIntegration: true } });
     });
     afterEach(async () => {
       await closeWindow(w);
-      w = null as unknown as BrowserWindow;
+      w = (null as unknown) as BrowserWindow;
     });
 
     it('prevents users to access methods of webContents', async () => {
@@ -215,7 +230,7 @@ describe('BrowserWindow module', () => {
       }).to.throw('Object has been destroyed');
     });
     it('should not crash when destroying windows with pending events', () => {
-      const focusListener = () => { };
+      const focusListener = () => {};
       app.on('browser-window-focus', focusListener);
       const windowCount = 3;
       const windowOptions = {
@@ -223,19 +238,19 @@ describe('BrowserWindow module', () => {
         width: 400,
         height: 400,
         webPreferences: {
-          backgroundThrottling: false
-        }
+          backgroundThrottling: false,
+        },
       };
       const windows = Array.from(Array(windowCount)).map(() => new BrowserWindow(windowOptions));
-      windows.forEach(win => win.show());
-      windows.forEach(win => win.focus());
-      windows.forEach(win => win.destroy());
+      windows.forEach((win) => win.show());
+      windows.forEach((win) => win.focus());
+      windows.forEach((win) => win.destroy());
       app.removeListener('browser-window-focus', focusListener);
     });
   });
 
   describe('BrowserWindow.loadURL(url)', () => {
-    let w = null as unknown as BrowserWindow;
+    let w = (null as unknown) as BrowserWindow;
     const scheme = 'other';
     const srcPath = path.join(fixtures, 'api', 'loaded-from-dataurl.js');
     before(() => {
@@ -253,10 +268,10 @@ describe('BrowserWindow module', () => {
     });
     afterEach(async () => {
       await closeWindow(w);
-      w = null as unknown as BrowserWindow;
+      w = (null as unknown) as BrowserWindow;
     });
-    let server = null as unknown as http.Server;
-    let url = null as unknown as string;
+    let server = (null as unknown) as http.Server;
+    let url = (null as unknown) as string;
     let postData = null as any;
     before((done) => {
       const filePath = path.join(fixtures, 'pages', 'a.html');
@@ -264,18 +279,18 @@ describe('BrowserWindow module', () => {
       postData = [
         {
           type: 'rawData',
-          bytes: Buffer.from('username=test&file=')
+          bytes: Buffer.from('username=test&file='),
         },
         {
           type: 'file',
           filePath: filePath,
           offset: 0,
           length: fileStats.size,
-          modificationTime: fileStats.mtime.getTime() / 1000
-        }
+          modificationTime: fileStats.mtime.getTime() / 1000,
+        },
       ];
       server = http.createServer((req, res) => {
-        function respond () {
+        function respond() {
           if (req.method === 'POST') {
             let body = '';
             req.on('data', (data) => {
@@ -285,8 +300,7 @@ describe('BrowserWindow module', () => {
               const parsedData = qs.parse(body);
               fs.readFile(filePath, (err, data) => {
                 if (err) return;
-                if (parsedData.username === 'test' &&
-                  parsedData.file === data.toString()) {
+                if (parsedData.username === 'test' && parsedData.file === data.toString()) {
                   res.end();
                 }
               });
@@ -326,7 +340,7 @@ describe('BrowserWindow module', () => {
     it.skip('should emit did-fail-load event for files that do not exist', async () => {
       const didFailLoad = emittedOnce(w.webContents, 'did-fail-load');
       w.loadURL('file://a.txt');
-      const [, code, desc,, isMainFrame] = await didFailLoad;
+      const [, code, desc, , isMainFrame] = await didFailLoad;
       expect(code).to.equal(-6);
       expect(desc).to.equal('ERR_FILE_NOT_FOUND');
       expect(isMainFrame).to.equal(true);
@@ -334,7 +348,7 @@ describe('BrowserWindow module', () => {
     it('should emit did-fail-load event for invalid URL', async () => {
       const didFailLoad = emittedOnce(w.webContents, 'did-fail-load');
       w.loadURL('http://example:port');
-      const [, code, desc,, isMainFrame] = await didFailLoad;
+      const [, code, desc, , isMainFrame] = await didFailLoad;
       expect(desc).to.equal('ERR_INVALID_URL');
       expect(code).to.equal(-300);
       expect(isMainFrame).to.equal(true);
@@ -342,7 +356,7 @@ describe('BrowserWindow module', () => {
     it('should set `mainFrame = false` on did-fail-load events in iframes', async () => {
       const didFailLoad = emittedOnce(w.webContents, 'did-fail-load');
       w.loadFile(path.join(fixtures, 'api', 'did-fail-load-iframe.html'));
-      const [,,,, isMainFrame] = await didFailLoad;
+      const [, , , , isMainFrame] = await didFailLoad;
       expect(isMainFrame).to.equal(false);
     });
     it('does not crash in did-fail-provisional-load handler', (done) => {
@@ -356,7 +370,7 @@ describe('BrowserWindow module', () => {
       const data = Buffer.alloc(2 * 1024 * 1024).toString('base64');
       const didFailLoad = emittedOnce(w.webContents, 'did-fail-load');
       w.loadURL(`data:image/png;base64,${data}`);
-      const [, code, desc,, isMainFrame] = await didFailLoad;
+      const [, code, desc, , isMainFrame] = await didFailLoad;
       expect(desc).to.equal('ERR_INVALID_URL');
       expect(code).to.equal(-300);
       expect(isMainFrame).to.equal(true);
@@ -384,14 +398,16 @@ describe('BrowserWindow module', () => {
 
     // FIXME(robo/nornagon): re-enable these once service workers work
     describe.skip('POST navigations', () => {
-      afterEach(() => { w.webContents.session.webRequest.onBeforeSendHeaders(null); });
+      afterEach(() => {
+        w.webContents.session.webRequest.onBeforeSendHeaders(null);
+      });
 
       it('supports specifying POST data', async () => {
         await w.loadURL(url, { postData });
       });
       it('sets the content type header on URL encoded forms', async () => {
         await w.loadURL(url);
-        const requestDetails: Promise<OnBeforeSendHeadersListenerDetails> = new Promise(resolve => {
+        const requestDetails: Promise<OnBeforeSendHeadersListenerDetails> = new Promise((resolve) => {
           w.webContents.session.webRequest.onBeforeSendHeaders((details) => {
             resolve(details);
           });
@@ -407,7 +423,7 @@ describe('BrowserWindow module', () => {
       });
       it('sets the content type header on multi part forms', async () => {
         await w.loadURL(url);
-        const requestDetails: Promise<OnBeforeSendHeadersListenerDetails> = new Promise(resolve => {
+        const requestDetails: Promise<OnBeforeSendHeadersListenerDetails> = new Promise((resolve) => {
           w.webContents.session.webRequest.onBeforeSendHeaders((details) => {
             resolve(details);
           });
@@ -430,7 +446,9 @@ describe('BrowserWindow module', () => {
 
     it('should support support base url for data urls', async () => {
       const answer = emittedOnce(ipcMain, 'answer');
-      w.loadURL('data:text/html,<script src="loaded-from-dataurl.js"></script>', { baseURLForDataURL: `other://${path.join(fixtures, 'api')}${path.sep}` });
+      w.loadURL('data:text/html,<script src="loaded-from-dataurl.js"></script>', {
+        baseURLForDataURL: `other://${path.join(fixtures, 'api')}${path.sep}`,
+      });
       const [, test] = await answer;
       expect(test).to.equal('test');
     });
@@ -438,18 +456,18 @@ describe('BrowserWindow module', () => {
 
   for (const sandbox of [false, true]) {
     describe(`navigation events${sandbox ? ' with sandbox' : ''}`, () => {
-      let w = null as unknown as BrowserWindow;
+      let w = (null as unknown) as BrowserWindow;
       beforeEach(() => {
         w = new BrowserWindow({ show: false, webPreferences: { nodeIntegration: false, sandbox } });
       });
       afterEach(async () => {
         await closeWindow(w);
-        w = null as unknown as BrowserWindow;
+        w = (null as unknown) as BrowserWindow;
       });
 
       describe('will-navigate event', () => {
-        let server = null as unknown as http.Server;
-        let url = null as unknown as string;
+        let server = (null as unknown) as http.Server;
+        let url = (null as unknown) as string;
         before((done) => {
           server = http.createServer((req, res) => {
             if (req.url === '/navigate-top') {
@@ -499,7 +517,7 @@ describe('BrowserWindow module', () => {
         it('is triggered when navigating from file: to http:', async () => {
           await w.loadFile(path.join(fixtures, 'api', 'blank.html'));
           w.webContents.executeJavaScript(`location.href = ${JSON.stringify(url)}`);
-          const navigatedTo = await new Promise(resolve => {
+          const navigatedTo = await new Promise((resolve) => {
             w.webContents.once('will-navigate', (e, url) => {
               e.preventDefault();
               resolve(url);
@@ -512,7 +530,7 @@ describe('BrowserWindow module', () => {
         it('is triggered when navigating from about:blank to http:', async () => {
           await w.loadURL('about:blank');
           w.webContents.executeJavaScript(`location.href = ${JSON.stringify(url)}`);
-          const navigatedTo = await new Promise(resolve => {
+          const navigatedTo = await new Promise((resolve) => {
             w.webContents.once('will-navigate', (e, url) => {
               e.preventDefault();
               resolve(url);
@@ -530,22 +548,30 @@ describe('BrowserWindow module', () => {
           const iframeTarget = targets.targetInfos.find((t: any) => t.type === 'iframe');
           const { sessionId } = await w.webContents.debugger.sendCommand('Target.attachToTarget', {
             targetId: iframeTarget.targetId,
-            flatten: true
+            flatten: true,
           });
-          await w.webContents.debugger.sendCommand('Input.dispatchMouseEvent', {
-            type: 'mousePressed',
-            x: 10,
-            y: 10,
-            clickCount: 1,
-            button: 'left'
-          }, sessionId);
-          await w.webContents.debugger.sendCommand('Input.dispatchMouseEvent', {
-            type: 'mouseReleased',
-            x: 10,
-            y: 10,
-            clickCount: 1,
-            button: 'left'
-          }, sessionId);
+          await w.webContents.debugger.sendCommand(
+            'Input.dispatchMouseEvent',
+            {
+              type: 'mousePressed',
+              x: 10,
+              y: 10,
+              clickCount: 1,
+              button: 'left',
+            },
+            sessionId,
+          );
+          await w.webContents.debugger.sendCommand(
+            'Input.dispatchMouseEvent',
+            {
+              type: 'mouseReleased',
+              x: 10,
+              y: 10,
+              clickCount: 1,
+              button: 'left',
+            },
+            sessionId,
+          );
           let willNavigateEmitted = false;
           w.webContents.on('will-navigate', () => {
             willNavigateEmitted = true;
@@ -556,8 +582,8 @@ describe('BrowserWindow module', () => {
       });
 
       describe('will-redirect event', () => {
-        let server = null as unknown as http.Server;
-        let url = null as unknown as string;
+        let server = (null as unknown) as http.Server;
+        let url = (null as unknown) as string;
         before((done) => {
           server = http.createServer((req, res) => {
             if (req.url === '/302') {
@@ -624,10 +650,7 @@ describe('BrowserWindow module', () => {
           });
           w.webContents.on('did-stop-loading', () => {
             try {
-              expect(w.webContents.getURL()).to.equal(
-                `${url}/navigate-302`,
-                'url should not have changed after navigation event'
-              );
+              expect(w.webContents.getURL()).to.equal(`${url}/navigate-302`, 'url should not have changed after navigation event');
               done();
             } catch (e) {
               done(e);
@@ -647,13 +670,13 @@ describe('BrowserWindow module', () => {
   }
 
   describe('focus and visibility', () => {
-    let w = null as unknown as BrowserWindow;
+    let w = (null as unknown) as BrowserWindow;
     beforeEach(() => {
       w = new BrowserWindow({ show: false });
     });
     afterEach(async () => {
       await closeWindow(w);
-      w = null as unknown as BrowserWindow;
+      w = (null as unknown) as BrowserWindow;
     });
 
     describe('BrowserWindow.show()', () => {
@@ -769,9 +792,7 @@ describe('BrowserWindow module', () => {
 
     ifdescribe(features.isDesktopCapturerEnabled())('BrowserWindow.moveAbove(mediaSourceId)', () => {
       it('should throw an exception if wrong formatting', async () => {
-        const fakeSourceIds = [
-          'none', 'screen:0', 'window:fake', 'window:1234', 'foobar:1:2'
-        ];
+        const fakeSourceIds = ['none', 'screen:0', 'window:fake', 'window:1234', 'foobar:1:2'];
         fakeSourceIds.forEach((sourceId) => {
           expect(() => {
             w.moveAbove(sourceId);
@@ -790,8 +811,7 @@ describe('BrowserWindow module', () => {
 
       it('should throw an exception if invalid window', async () => {
         // It is very unlikely that these window id exist.
-        const fakeSourceIds = ['window:99999999:0', 'window:123456:1',
-          'window:123456:9'];
+        const fakeSourceIds = ['window:99999999:0', 'window:123456:1', 'window:123456:9'];
         fakeSourceIds.forEach((sourceId) => {
           expect(() => {
             w.moveAbove(sourceId);
@@ -826,7 +846,7 @@ describe('BrowserWindow module', () => {
   });
 
   describe('sizing', () => {
-    let w = null as unknown as BrowserWindow;
+    let w = (null as unknown) as BrowserWindow;
 
     beforeEach(() => {
       w = new BrowserWindow({ show: false, width: 400, height: 400 });
@@ -834,7 +854,7 @@ describe('BrowserWindow module', () => {
 
     afterEach(async () => {
       await closeWindow(w);
-      w = null as unknown as BrowserWindow;
+      w = (null as unknown) as BrowserWindow;
     });
 
     describe('BrowserWindow.setBounds(bounds[, animate])', () => {
@@ -857,7 +877,7 @@ describe('BrowserWindow module', () => {
       });
 
       ifit(process.platform === 'darwin')('on macOS', () => {
-        it('emits \'resized\' event after animating', async () => {
+        it("emits 'resized' event after animating", async () => {
           const fullBounds = { x: 440, y: 225, width: 500, height: 400 };
           w.setBounds(fullBounds, true);
 
@@ -878,7 +898,7 @@ describe('BrowserWindow module', () => {
       });
 
       ifit(process.platform === 'darwin')('on macOS', () => {
-        it('emits \'resized\' event after animating', async () => {
+        it("emits 'resized' event after animating", async () => {
           const size = [300, 400];
           w.setSize(size[0], size[1], true);
 
@@ -942,7 +962,7 @@ describe('BrowserWindow module', () => {
           show: false,
           frame: false,
           width: 400,
-          height: 400
+          height: 400,
         });
         const size = [456, 567];
         w.setContentSize(size[0], size[1]);
@@ -967,7 +987,7 @@ describe('BrowserWindow module', () => {
           show: false,
           frame: false,
           width: 300,
-          height: 300
+          height: 300,
         });
         const bounds = { x: 10, y: 10, width: 250, height: 250 };
         const resize = emittedOnce(w, 'resize');
@@ -988,7 +1008,7 @@ describe('BrowserWindow module', () => {
         const backgroundColor = '#BBAAFF';
         w.destroy();
         w = new BrowserWindow({
-          backgroundColor: backgroundColor
+          backgroundColor: backgroundColor,
         });
         expect(w.getBackgroundColor()).to.equal(backgroundColor);
       });
@@ -1047,7 +1067,7 @@ describe('BrowserWindow module', () => {
             width: 300,
             height: 300,
             minWidth: 300,
-            minHeight: 300
+            minHeight: 300,
           });
           const bounds = w.getBounds();
           w.once('maximize', () => {
@@ -1089,7 +1109,7 @@ describe('BrowserWindow module', () => {
             width: 300,
             height: 300,
             minWidth: 300,
-            minHeight: 300
+            minHeight: 300,
           });
           const bounds = w.getBounds();
           w.once('minimize', () => {
@@ -1117,7 +1137,7 @@ describe('BrowserWindow module', () => {
             expect(w.fullScreen).to.be.true();
           });
 
-          it('checks normal bounds when fullscreen\'ed', async () => {
+          it("checks normal bounds when fullscreen'ed", async () => {
             const bounds = w.getBounds();
             const enterFullScreen = emittedOnce(w, 'enter-full-screen');
             w.show();
@@ -1126,7 +1146,7 @@ describe('BrowserWindow module', () => {
             expectBoundsEqual(w.getNormalBounds(), bounds);
           });
 
-          it('checks normal bounds when unfullscreen\'ed', async () => {
+          it("checks normal bounds when unfullscreen'ed", async () => {
             const bounds = w.getBounds();
             w.once('enter-full-screen', () => {
               w.fullScreen = false;
@@ -1152,7 +1172,7 @@ describe('BrowserWindow module', () => {
             expect(w.isFullScreen()).to.be.true();
           });
 
-          it('checks normal bounds when fullscreen\'ed', async () => {
+          it("checks normal bounds when fullscreen'ed", async () => {
             const bounds = w.getBounds();
             w.show();
 
@@ -1163,7 +1183,7 @@ describe('BrowserWindow module', () => {
             expectBoundsEqual(w.getNormalBounds(), bounds);
           });
 
-          it('checks normal bounds when unfullscreen\'ed', async () => {
+          it("checks normal bounds when unfullscreen'ed", async () => {
             const bounds = w.getBounds();
             w.show();
 
@@ -1183,13 +1203,13 @@ describe('BrowserWindow module', () => {
   });
 
   ifdescribe(process.platform === 'darwin')('tabbed windows', () => {
-    let w = null as unknown as BrowserWindow;
+    let w = (null as unknown) as BrowserWindow;
     beforeEach(() => {
       w = new BrowserWindow({ show: false });
     });
     afterEach(async () => {
       await closeWindow(w);
-      w = null as unknown as BrowserWindow;
+      w = (null as unknown) as BrowserWindow;
     });
 
     describe('BrowserWindow.selectPreviousTab()', () => {
@@ -1298,7 +1318,7 @@ describe('BrowserWindow module', () => {
         x: 0,
         y: 0,
         width: 100,
-        height: 100
+        height: 100,
       });
 
       expect(image.isEmpty()).to.equal(true);
@@ -1320,13 +1340,13 @@ describe('BrowserWindow module', () => {
   });
 
   describe('BrowserWindow.setProgressBar(progress)', () => {
-    let w = null as unknown as BrowserWindow;
+    let w = (null as unknown) as BrowserWindow;
     before(() => {
       w = new BrowserWindow({ show: false });
     });
     after(async () => {
       await closeWindow(w);
-      w = null as unknown as BrowserWindow;
+      w = (null as unknown) as BrowserWindow;
     });
     it('sets the progress', () => {
       expect(() => {
@@ -1359,7 +1379,7 @@ describe('BrowserWindow module', () => {
   });
 
   describe('BrowserWindow.setAlwaysOnTop(flag, level)', () => {
-    let w = null as unknown as BrowserWindow;
+    let w = (null as unknown) as BrowserWindow;
 
     beforeEach(() => {
       w = new BrowserWindow({ show: true });
@@ -1367,7 +1387,7 @@ describe('BrowserWindow module', () => {
 
     afterEach(async () => {
       await closeWindow(w);
-      w = null as unknown as BrowserWindow;
+      w = (null as unknown) as BrowserWindow;
     });
 
     it('sets the window as always on top', () => {
@@ -1400,10 +1420,10 @@ describe('BrowserWindow module', () => {
   });
 
   describe('preconnect feature', () => {
-    let w = null as unknown as BrowserWindow;
+    let w = (null as unknown) as BrowserWindow;
 
-    let server = null as unknown as http.Server;
-    let url = null as unknown as string;
+    let server = (null as unknown) as http.Server;
+    let url = (null as unknown) as string;
     let connections = 0;
 
     beforeEach(async () => {
@@ -1416,16 +1436,18 @@ describe('BrowserWindow module', () => {
         }
         res.end();
       });
-      server.on('connection', () => { connections++; });
+      server.on('connection', () => {
+        connections++;
+      });
 
-      await new Promise(resolve => server.listen(0, '127.0.0.1', () => resolve()));
+      await new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve()));
       url = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
     });
     afterEach(async () => {
       server.close();
       await closeWindow(w);
-      w = null as unknown as BrowserWindow;
-      server = null as unknown as http.Server;
+      w = (null as unknown) as BrowserWindow;
+      server = (null as unknown) as http.Server;
     });
 
     it('calling preconnect() connects to the server', async () => {
@@ -1454,13 +1476,13 @@ describe('BrowserWindow module', () => {
   });
 
   describe('BrowserWindow.setAutoHideCursor(autoHide)', () => {
-    let w = null as unknown as BrowserWindow;
+    let w = (null as unknown) as BrowserWindow;
     beforeEach(() => {
       w = new BrowserWindow({ show: false });
     });
     afterEach(async () => {
       await closeWindow(w);
-      w = null as unknown as BrowserWindow;
+      w = (null as unknown) as BrowserWindow;
     });
 
     ifit(process.platform === 'darwin')('on macOS', () => {
@@ -1495,7 +1517,7 @@ describe('BrowserWindow module', () => {
         const w = new BrowserWindow({
           show: false,
           titleBarStyle: 'customButtonsOnHover',
-          frame: false
+          frame: false,
         });
         w.setWindowButtonVisibility(true);
       }).to.throw('Not supported for this window');
@@ -1522,7 +1544,11 @@ describe('BrowserWindow module', () => {
 
     it('gets the set traffic light position property', () => {
       const pos = { x: 10, y: 10 };
-      const w = new BrowserWindow({ show: false, titleBarStyle: 'hidden', trafficLightPosition: pos });
+      const w = new BrowserWindow({
+        show: false,
+        titleBarStyle: 'hidden',
+        trafficLightPosition: pos,
+      });
       const currentPosition = w.getTrafficLightPosition();
 
       expect(currentPosition).to.deep.equal(pos);
@@ -1534,7 +1560,11 @@ describe('BrowserWindow module', () => {
 
     it('can set the traffic light position property', () => {
       const pos = { x: 10, y: 10 };
-      const w = new BrowserWindow({ show: false, titleBarStyle: 'hidden', trafficLightPosition: pos });
+      const w = new BrowserWindow({
+        show: false,
+        titleBarStyle: 'hidden',
+        trafficLightPosition: pos,
+      });
       w.setTrafficLightPosition(pos);
       const currentPosition = w.getTrafficLightPosition();
 
@@ -1553,7 +1583,10 @@ describe('BrowserWindow module', () => {
         w.setAppDetails({ appId: 'my.app.id' });
         w.setAppDetails({ appIconPath: iconPath, appIconIndex: 0 });
         w.setAppDetails({ appIconPath: iconPath });
-        w.setAppDetails({ relaunchCommand: 'my-app.exe arg1 arg2', relaunchDisplayName: 'My app name' });
+        w.setAppDetails({
+          relaunchCommand: 'my-app.exe arg1 arg2',
+          relaunchDisplayName: 'My app name',
+        });
         w.setAppDetails({ relaunchCommand: 'my-app.exe arg1 arg2' });
         w.setAppDetails({ relaunchDisplayName: 'My app name' });
         w.setAppDetails({
@@ -1561,7 +1594,7 @@ describe('BrowserWindow module', () => {
           appIconPath: iconPath,
           appIconIndex: 0,
           relaunchCommand: 'my-app.exe arg1 arg2',
-          relaunchDisplayName: 'My app name'
+          relaunchDisplayName: 'My app name',
         });
         w.setAppDetails({});
       }).to.not.throw();
@@ -1673,7 +1706,7 @@ describe('BrowserWindow module', () => {
   describe('BrowserWindow.setOpacity(opacity)', () => {
     afterEach(closeAllWindows);
 
-    ifdescribe(process.platform !== 'linux')(('Windows and Mac'), () => {
+    ifdescribe(process.platform !== 'linux')('Windows and Mac', () => {
       it('make window with initial opacity', () => {
         const w = new BrowserWindow({ show: false, opacity: 0.5 });
         expect(w.getOpacity()).to.equal(0.5);
@@ -1699,7 +1732,7 @@ describe('BrowserWindow module', () => {
       });
     });
 
-    ifdescribe(process.platform === 'linux')(('Linux'), () => {
+    ifdescribe(process.platform === 'linux')('Linux', () => {
       it('sets 1 regardless of parameter', () => {
         const w = new BrowserWindow({ show: false });
         w.setOpacity(0);
@@ -1717,7 +1750,10 @@ describe('BrowserWindow module', () => {
       expect(() => {
         w.setShape([]);
         w.setShape([{ x: 0, y: 0, width: 100, height: 100 }]);
-        w.setShape([{ x: 0, y: 0, width: 100, height: 100 }, { x: 0, y: 200, width: 1000, height: 100 }]);
+        w.setShape([
+          { x: 0, y: 0, width: 100, height: 100 },
+          { x: 0, y: 200, width: 1000, height: 100 },
+        ]);
         w.setShape([]);
       }).to.not.throw();
     });
@@ -1730,7 +1766,7 @@ describe('BrowserWindow module', () => {
         show: false,
         width: 400,
         height: 400,
-        useContentSize: true
+        useContentSize: true,
       });
       const contentSize = w.getContentSize();
       expect(contentSize).to.deep.equal([400, 400]);
@@ -1739,7 +1775,7 @@ describe('BrowserWindow module', () => {
       const w = new BrowserWindow({
         show: false,
         width: 400,
-        height: 400
+        height: 400,
       });
       const size = w.getSize();
       expect(size).to.deep.equal([400, 400]);
@@ -1750,7 +1786,7 @@ describe('BrowserWindow module', () => {
         frame: false,
         width: 400,
         height: 400,
-        useContentSize: true
+        useContentSize: true,
       });
       const contentSize = w.getContentSize();
       expect(contentSize).to.deep.equal([400, 400]);
@@ -1766,7 +1802,7 @@ describe('BrowserWindow module', () => {
         show: false,
         width: 400,
         height: 400,
-        titleBarStyle: 'hidden'
+        titleBarStyle: 'hidden',
       });
       const contentSize = w.getContentSize();
       expect(contentSize).to.deep.equal([400, 400]);
@@ -1776,7 +1812,7 @@ describe('BrowserWindow module', () => {
         show: false,
         width: 400,
         height: 400,
-        titleBarStyle: 'hiddenInset'
+        titleBarStyle: 'hiddenInset',
       });
       const contentSize = w.getContentSize();
       expect(contentSize).to.deep.equal([400, 400]);
@@ -1835,7 +1871,7 @@ describe('BrowserWindow module', () => {
         show: false,
         width: 500,
         height: 400,
-        zoomToPageWidth: true
+        zoomToPageWidth: true,
       });
       w.maximize();
       expect(w.getSize()[0]).to.equal(500);
@@ -1848,11 +1884,11 @@ describe('BrowserWindow module', () => {
       expect(() => {
         /* eslint-disable no-new */
         new BrowserWindow({
-          tabbingIdentifier: 'group1'
+          tabbingIdentifier: 'group1',
         });
         new BrowserWindow({
           tabbingIdentifier: 'group2',
-          frame: false
+          frame: false,
         });
         /* eslint-enable no-new */
       }).not.to.throw();
@@ -1860,18 +1896,20 @@ describe('BrowserWindow module', () => {
   });
 
   describe('"webPreferences" option', () => {
-    afterEach(() => { ipcMain.removeAllListeners('answer'); });
+    afterEach(() => {
+      ipcMain.removeAllListeners('answer');
+    });
     afterEach(closeAllWindows);
 
     describe('"preload" option', () => {
-      const doesNotLeakSpec = (name: string, webPrefs: { nodeIntegration: boolean, sandbox: boolean, contextIsolation: boolean }) => {
+      const doesNotLeakSpec = (name: string, webPrefs: { nodeIntegration: boolean; sandbox: boolean; contextIsolation: boolean }) => {
         it(name, async () => {
           const w = new BrowserWindow({
             webPreferences: {
               ...webPrefs,
-              preload: path.resolve(fixtures, 'module', 'empty.js')
+              preload: path.resolve(fixtures, 'module', 'empty.js'),
             },
-            show: false
+            show: false,
           });
           w.loadFile(path.join(fixtures, 'api', 'no-leak.html'));
           const [, result] = await emittedOnce(ipcMain, 'leak-result');
@@ -1885,31 +1923,31 @@ describe('BrowserWindow module', () => {
       doesNotLeakSpec('does not leak require', {
         nodeIntegration: false,
         sandbox: false,
-        contextIsolation: false
+        contextIsolation: false,
       });
       doesNotLeakSpec('does not leak require when sandbox is enabled', {
         nodeIntegration: false,
         sandbox: true,
-        contextIsolation: false
+        contextIsolation: false,
       });
       doesNotLeakSpec('does not leak require when context isolation is enabled', {
         nodeIntegration: false,
         sandbox: false,
-        contextIsolation: true
+        contextIsolation: true,
       });
       doesNotLeakSpec('does not leak require when context isolation and sandbox are enabled', {
         nodeIntegration: false,
         sandbox: true,
-        contextIsolation: true
+        contextIsolation: true,
       });
       it('does not leak any node globals on the window object with nodeIntegration is disabled', async () => {
         let w = new BrowserWindow({
           webPreferences: {
             contextIsolation: false,
             nodeIntegration: false,
-            preload: path.resolve(fixtures, 'module', 'empty.js')
+            preload: path.resolve(fixtures, 'module', 'empty.js'),
           },
-          show: false
+          show: false,
         });
         w.loadFile(path.join(fixtures, 'api', 'globals.html'));
         const [, notIsolated] = await emittedOnce(ipcMain, 'leak-result');
@@ -1920,9 +1958,9 @@ describe('BrowserWindow module', () => {
           webPreferences: {
             contextIsolation: true,
             nodeIntegration: false,
-            preload: path.resolve(fixtures, 'module', 'empty.js')
+            preload: path.resolve(fixtures, 'module', 'empty.js'),
           },
-          show: false
+          show: false,
         });
         w.loadFile(path.join(fixtures, 'api', 'globals.html'));
         const [, isolated] = await emittedOnce(ipcMain, 'leak-result');
@@ -1940,8 +1978,8 @@ describe('BrowserWindow module', () => {
           show: false,
           webPreferences: {
             nodeIntegration: true,
-            preload
-          }
+            preload,
+          },
         });
         w.loadFile(path.join(fixtures, 'api', 'preload.html'));
         const [, test] = await emittedOnce(ipcMain, 'answer');
@@ -1954,8 +1992,8 @@ describe('BrowserWindow module', () => {
           webPreferences: {
             nodeIntegration: true,
             enableRemoteModule: true,
-            preload
-          }
+            preload,
+          },
         });
         w.loadFile(path.join(fixtures, 'api', 'preload.html'));
         const [, test] = await emittedOnce(ipcMain, 'answer');
@@ -1967,8 +2005,8 @@ describe('BrowserWindow module', () => {
           show: false,
           webPreferences: {
             nodeIntegration: true,
-            preload
-          }
+            preload,
+          },
         });
         w.loadFile(path.join(fixtures, 'api', 'preload.html'));
         const [, test] = await emittedOnce(ipcMain, 'answer');
@@ -1983,7 +2021,7 @@ describe('BrowserWindow module', () => {
       const preloads = [
         path.join(fixtures, 'module', 'set-global-preload-1.js'),
         path.join(fixtures, 'module', 'set-global-preload-2.js'),
-        path.relative(process.cwd(), path.join(fixtures, 'module', 'set-global-preload-3.js'))
+        path.relative(process.cwd(), path.join(fixtures, 'module', 'set-global-preload-3.js')),
       ];
       const defaultSession = session.defaultSession;
 
@@ -2006,8 +2044,8 @@ describe('BrowserWindow module', () => {
               show: false,
               webPreferences: {
                 sandbox,
-                preload: path.join(fixtures, 'module', 'get-global-preload.js')
-              }
+                preload: path.join(fixtures, 'module', 'get-global-preload.js'),
+              },
             });
             w.loadURL('about:blank');
             const [, preload1, preload2, preload3] = await emittedOnce(ipcMain, 'vars');
@@ -2030,8 +2068,8 @@ describe('BrowserWindow module', () => {
           webPreferences: {
             nodeIntegration: true,
             preload,
-            additionalArguments: ['--my-magic-arg']
-          }
+            additionalArguments: ['--my-magic-arg'],
+          },
         });
         w.loadFile(path.join(fixtures, 'api', 'blank.html'));
         const [, argv] = await emittedOnce(ipcMain, 'answer');
@@ -2045,8 +2083,8 @@ describe('BrowserWindow module', () => {
           webPreferences: {
             nodeIntegration: true,
             preload,
-            additionalArguments: ['--my-magic-arg=foo']
-          }
+            additionalArguments: ['--my-magic-arg=foo'],
+          },
         });
         w.loadFile(path.join(fixtures, 'api', 'blank.html'));
         const [, argv] = await emittedOnce(ipcMain, 'answer');
@@ -2060,8 +2098,8 @@ describe('BrowserWindow module', () => {
         const w = new BrowserWindow({
           show: false,
           webPreferences: {
-            preload
-          }
+            preload,
+          },
         });
         w.loadFile(path.join(fixtures, 'api', 'blank.html'));
         const [, typeofProcess, typeofBuffer] = await emittedOnce(ipcMain, 'answer');
@@ -2080,8 +2118,8 @@ describe('BrowserWindow module', () => {
               show: false,
               webPreferences: {
                 preload,
-                sandbox
-              }
+                sandbox,
+              },
             });
             const p = emittedOnce(ipcMain, 'remote');
             w.loadFile(path.join(fixtures, 'api', 'blank.html'));
@@ -2095,8 +2133,8 @@ describe('BrowserWindow module', () => {
               webPreferences: {
                 preload,
                 sandbox,
-                enableRemoteModule: false
-              }
+                enableRemoteModule: false,
+              },
             });
             const p = emittedOnce(ipcMain, 'remote');
             w.loadFile(path.join(fixtures, 'api', 'blank.html'));
@@ -2110,8 +2148,8 @@ describe('BrowserWindow module', () => {
               webPreferences: {
                 preload,
                 sandbox,
-                enableRemoteModule: true
-              }
+                enableRemoteModule: true,
+              },
             });
             const p = emittedOnce(ipcMain, 'remote');
             w.loadFile(path.join(fixtures, 'api', 'blank.html'));
@@ -2128,22 +2166,24 @@ describe('BrowserWindow module', () => {
     describe('"sandbox" option', () => {
       const preload = path.join(path.resolve(__dirname, 'fixtures'), 'module', 'preload-sandbox.js');
 
-      let server: http.Server = null as unknown as http.Server;
-      let serverUrl: string = null as unknown as string;
+      let server: http.Server = (null as unknown) as http.Server;
+      let serverUrl: string = (null as unknown) as string;
 
       before((done) => {
-        server = http.createServer((request, response) => {
-          switch (request.url) {
-            case '/cross-site':
-              response.end(`<html><body><h1>${request.url}</h1></body></html>`);
-              break;
-            default:
-              throw new Error(`unsupported endpoint: ${request.url}`);
-          }
-        }).listen(0, '127.0.0.1', () => {
-          serverUrl = 'http://127.0.0.1:' + (server.address() as AddressInfo).port;
-          done();
-        });
+        server = http
+          .createServer((request, response) => {
+            switch (request.url) {
+              case '/cross-site':
+                response.end(`<html><body><h1>${request.url}</h1></body></html>`);
+                break;
+              default:
+                throw new Error(`unsupported endpoint: ${request.url}`);
+            }
+          })
+          .listen(0, '127.0.0.1', () => {
+            serverUrl = 'http://127.0.0.1:' + (server.address() as AddressInfo).port;
+            done();
+          });
       });
 
       after(() => {
@@ -2155,8 +2195,8 @@ describe('BrowserWindow module', () => {
           show: false,
           webPreferences: {
             sandbox: true,
-            preload
-          }
+            preload,
+          },
         });
         w.loadFile(path.join(fixtures, 'api', 'preload.html'));
         const [, test] = await emittedOnce(ipcMain, 'answer');
@@ -2169,8 +2209,8 @@ describe('BrowserWindow module', () => {
           show: false,
           webPreferences: {
             sandbox: true,
-            preload: preloadSpecialChars
-          }
+            preload: preloadSpecialChars,
+          },
         });
         w.loadFile(path.join(fixtures, 'api', 'preload.html'));
         const [, test] = await emittedOnce(ipcMain, 'answer');
@@ -2182,8 +2222,8 @@ describe('BrowserWindow module', () => {
           show: false,
           webPreferences: {
             sandbox: true,
-            preload
-          }
+            preload,
+          },
         });
         w.loadURL('about:blank');
         await emittedOnce(ipcMain, 'process-loaded');
@@ -2194,16 +2234,14 @@ describe('BrowserWindow module', () => {
           show: false,
           webPreferences: {
             sandbox: true,
-            preload
-          }
+            preload,
+          },
         });
         const htmlPath = path.join(__dirname, 'fixtures', 'api', 'sandbox.html?exit-event');
         const pageUrl = 'file://' + htmlPath;
         w.loadURL(pageUrl);
         const [, url] = await emittedOnce(ipcMain, 'answer');
-        const expectedUrl = process.platform === 'win32'
-          ? 'file:///' + htmlPath.replace(/\\/g, '/')
-          : pageUrl;
+        const expectedUrl = process.platform === 'win32' ? 'file:///' + htmlPath.replace(/\\/g, '/') : pageUrl;
         expect(url).to.equal(expectedUrl);
       });
 
@@ -2212,17 +2250,17 @@ describe('BrowserWindow module', () => {
           show: true,
           webPreferences: {
             sandbox: true,
-            preload
-          }
+            preload,
+          },
         });
 
         w.webContents.setWindowOpenHandler(() => ({
           action: 'allow',
           overrideBrowserWindowOptions: {
             webPreferences: {
-              preload
-            }
-          }
+              preload,
+            },
+          },
         }));
 
         const htmlPath = path.join(__dirname, 'fixtures', 'api', 'sandbox.html?window-open');
@@ -2230,9 +2268,7 @@ describe('BrowserWindow module', () => {
         const answer = emittedOnce(ipcMain, 'answer');
         w.loadURL(pageUrl);
         const [, { url, frameName, options }] = await emittedOnce(w.webContents, 'did-create-window');
-        const expectedUrl = process.platform === 'win32'
-          ? 'file:///' + htmlPath.replace(/\\/g, '/')
-          : pageUrl;
+        const expectedUrl = process.platform === 'win32' ? 'file:///' + htmlPath.replace(/\\/g, '/') : pageUrl;
         expect(url).to.equal(expectedUrl);
         expect(frameName).to.equal('popup!');
         expect(options.width).to.equal(500);
@@ -2246,23 +2282,22 @@ describe('BrowserWindow module', () => {
           show: true,
           webPreferences: {
             sandbox: true,
-            preload
-          }
+            preload,
+          },
         });
 
         w.webContents.setWindowOpenHandler(() => ({
           action: 'allow',
           overrideBrowserWindowOptions: {
             webPreferences: {
-              preload
-            }
-          }
+              preload,
+            },
+          },
         }));
 
-        w.loadFile(
-          path.join(__dirname, 'fixtures', 'api', 'sandbox.html'),
-          { search: 'window-open-external' }
-        );
+        w.loadFile(path.join(__dirname, 'fixtures', 'api', 'sandbox.html'), {
+          search: 'window-open-external',
+        });
 
         // Wait for a message from the main window saying that it's ready.
         await emittedOnce(ipcMain, 'opener-loaded');
@@ -2297,11 +2332,9 @@ describe('BrowserWindow module', () => {
         // so let's close it from here before we run any checks.
         await closeWindow(popupWindow, { assertNotWindows: false });
 
-        expect(popupAccessMessage).to.be.a('string',
-          'child\'s .document is accessible from its parent window');
+        expect(popupAccessMessage).to.be.a('string', "child's .document is accessible from its parent window");
         expect(popupAccessMessage).to.match(/^Blocked a frame with origin/);
-        expect(openerAccessMessage).to.be.a('string',
-          'opener .document is accessible from a popup window');
+        expect(openerAccessMessage).to.be.a('string', 'opener .document is accessible from a popup window');
         expect(openerAccessMessage).to.match(/^Blocked a frame with origin/);
       });
 
@@ -2309,12 +2342,15 @@ describe('BrowserWindow module', () => {
         const w = new BrowserWindow({
           show: false,
           webPreferences: {
-            sandbox: true
-          }
+            sandbox: true,
+          },
         });
 
         const preloadPath = path.join(fixtures, 'api', 'new-window-preload.js');
-        w.webContents.setWindowOpenHandler(() => ({ action: 'allow', overrideBrowserWindowOptions: { webPreferences: { preload: preloadPath } } }));
+        w.webContents.setWindowOpenHandler(() => ({
+          action: 'allow',
+          overrideBrowserWindowOptions: { webPreferences: { preload: preloadPath } },
+        }));
         w.loadFile(path.join(fixtures, 'api', 'new-window.html'));
         const [, { argv }] = await emittedOnce(ipcMain, 'answer');
         expect(argv).to.include('--enable-sandbox');
@@ -2324,17 +2360,17 @@ describe('BrowserWindow module', () => {
         const w = new BrowserWindow({
           show: false,
           webPreferences: {
-            sandbox: true
-          }
+            sandbox: true,
+          },
         });
 
         const preloadPath = path.join(fixtures, 'api', 'new-window-preload.js');
-        w.webContents.setWindowOpenHandler(() => ({ action: 'allow', overrideBrowserWindowOptions: { webPreferences: { preload: preloadPath, foo: 'bar' } } }));
+        w.webContents.setWindowOpenHandler(() => ({
+          action: 'allow',
+          overrideBrowserWindowOptions: { webPreferences: { preload: preloadPath, foo: 'bar' } },
+        }));
         w.loadFile(path.join(fixtures, 'api', 'new-window.html'));
-        const [[, childWebContents]] = await Promise.all([
-          emittedOnce(app, 'web-contents-created'),
-          emittedOnce(ipcMain, 'answer')
-        ]);
+        const [[, childWebContents]] = await Promise.all([emittedOnce(app, 'web-contents-created'), emittedOnce(ipcMain, 'answer')]);
         const webPreferences = childWebContents.getLastWebPreferences();
         expect(webPreferences.foo).to.equal('bar');
       });
@@ -2344,11 +2380,14 @@ describe('BrowserWindow module', () => {
           show: false,
           webPreferences: {
             sandbox: true,
-            preload
-          }
+            preload,
+          },
         });
         let childWc: WebContents | null = null;
-        w.webContents.setWindowOpenHandler(() => ({ action: 'allow', overrideBrowserWindowOptions: { webPreferences: { preload } } }));
+        w.webContents.setWindowOpenHandler(() => ({
+          action: 'allow',
+          overrideBrowserWindowOptions: { webPreferences: { preload } },
+        }));
 
         w.webContents.on('did-create-window', (win) => {
           childWc = win.webContents;
@@ -2365,47 +2404,46 @@ describe('BrowserWindow module', () => {
           event.sender.send('verified');
         });
 
-        const done = Promise.all([
-          'parent-answer',
-          'child-answer'
-        ].map(name => emittedOnce(ipcMain, name)));
-        w.loadFile(path.join(__dirname, 'fixtures', 'api', 'sandbox.html'), { search: 'verify-ipc-sender' });
+        const done = Promise.all(['parent-answer', 'child-answer'].map((name) => emittedOnce(ipcMain, name)));
+        w.loadFile(path.join(__dirname, 'fixtures', 'api', 'sandbox.html'), {
+          search: 'verify-ipc-sender',
+        });
         await done;
       });
 
       describe('event handling', () => {
-        let w: BrowserWindow = null as unknown as BrowserWindow;
+        let w: BrowserWindow = (null as unknown) as BrowserWindow;
         beforeEach(() => {
           w = new BrowserWindow({ show: false, webPreferences: { sandbox: true } });
         });
         it('works for window events', async () => {
           const pageTitleUpdated = emittedOnce(w, 'page-title-updated');
-          w.loadURL('data:text/html,<script>document.title = \'changed\'</script>');
+          w.loadURL("data:text/html,<script>document.title = 'changed'</script>");
           await pageTitleUpdated;
         });
 
         it('works for stop events', async () => {
-          const done = Promise.all([
-            'did-navigate',
-            'did-fail-load',
-            'did-stop-loading'
-          ].map(name => emittedOnce(w.webContents, name)));
+          const done = Promise.all(['did-navigate', 'did-fail-load', 'did-stop-loading'].map((name) => emittedOnce(w.webContents, name)));
           w.loadURL('data:text/html,<script>stop()</script>');
           await done;
         });
 
         it('works for web contents events', async () => {
-          const done = Promise.all([
-            'did-finish-load',
-            'did-frame-finish-load',
-            'did-navigate-in-page',
-            'will-navigate',
-            'did-start-loading',
-            'did-stop-loading',
-            'did-frame-finish-load',
-            'dom-ready'
-          ].map(name => emittedOnce(w.webContents, name)));
-          w.loadFile(path.join(__dirname, 'fixtures', 'api', 'sandbox.html'), { search: 'webcontents-events' });
+          const done = Promise.all(
+            [
+              'did-finish-load',
+              'did-frame-finish-load',
+              'did-navigate-in-page',
+              'will-navigate',
+              'did-start-loading',
+              'did-stop-loading',
+              'did-frame-finish-load',
+              'dom-ready',
+            ].map((name) => emittedOnce(w.webContents, name)),
+          );
+          w.loadFile(path.join(__dirname, 'fixtures', 'api', 'sandbox.html'), {
+            search: 'webcontents-events',
+          });
           await done;
         });
       });
@@ -2414,8 +2452,8 @@ describe('BrowserWindow module', () => {
         const w = new BrowserWindow({
           show: false,
           webPreferences: {
-            sandbox: true
-          }
+            sandbox: true,
+          },
         });
         const initialWebContents = webContents.getAllWebContents().map((i) => i.id);
         w.webContents.once('new-window', (e) => {
@@ -2441,10 +2479,12 @@ describe('BrowserWindow module', () => {
           webPreferences: {
             preload,
             sandbox: true,
-            enableRemoteModule: true
-          }
+            enableRemoteModule: true,
+          },
         });
-        w.loadFile(path.join(__dirname, 'fixtures', 'api', 'sandbox.html'), { search: 'reload-remote' });
+        w.loadFile(path.join(__dirname, 'fixtures', 'api', 'sandbox.html'), {
+          search: 'reload-remote',
+        });
 
         ipcMain.on('get-remote-module-path', (event) => {
           event.returnValue = path.join(fixtures, 'module', 'hello.js');
@@ -2478,12 +2518,17 @@ describe('BrowserWindow module', () => {
           webPreferences: {
             preload,
             sandbox: true,
-            enableRemoteModule: true
-          }
+            enableRemoteModule: true,
+          },
         });
-        w.webContents.setWindowOpenHandler(() => ({ action: 'allow', overrideBrowserWindowOptions: { webPreferences: { preload } } }));
+        w.webContents.setWindowOpenHandler(() => ({
+          action: 'allow',
+          overrideBrowserWindowOptions: { webPreferences: { preload } },
+        }));
 
-        w.loadFile(path.join(__dirname, 'fixtures', 'api', 'sandbox.html'), { search: 'reload-remote-child' });
+        w.loadFile(path.join(__dirname, 'fixtures', 'api', 'sandbox.html'), {
+          search: 'reload-remote-child',
+        });
 
         ipcMain.on('get-remote-module-path', (event) => {
           event.returnValue = path.join(fixtures, 'module', 'hello-child.js');
@@ -2516,8 +2561,8 @@ describe('BrowserWindow module', () => {
           show: false,
           webPreferences: {
             sandbox: true,
-            preload
-          }
+            preload,
+          },
         });
         w.webContents.once('preload-error', (event, preloadPath, error) => {
           throw error;
@@ -2558,8 +2603,8 @@ describe('BrowserWindow module', () => {
           webPreferences: {
             sandbox: true,
             preload,
-            webviewTag: true
-          }
+            webviewTag: true,
+          },
         });
         const didAttachWebview = emittedOnce(w.webContents, 'did-attach-webview');
         const webviewDomReady = emittedOnce(ipcMain, 'webview-dom-ready');
@@ -2572,7 +2617,7 @@ describe('BrowserWindow module', () => {
     });
 
     describe('nativeWindowOpen option', () => {
-      let w: BrowserWindow = null as unknown as BrowserWindow;
+      let w: BrowserWindow = (null as unknown) as BrowserWindow;
 
       beforeEach(() => {
         w = new BrowserWindow({
@@ -2581,8 +2626,8 @@ describe('BrowserWindow module', () => {
             nodeIntegration: true,
             nativeWindowOpen: true,
             // tests relies on preloads in opened windows
-            nodeIntegrationInSubFrames: true
-          }
+            nodeIntegrationInSubFrames: true,
+          },
         });
       });
 
@@ -2631,8 +2676,8 @@ describe('BrowserWindow module', () => {
             nodeIntegrationInSubFrames: true,
             nativeWindowOpen: true,
             webviewTag: true,
-            preload
-          }
+            preload,
+          },
         });
         w.webContents.once('new-window', (event, url, frameName, disposition, options) => {
           options.show = false;
@@ -2649,9 +2694,9 @@ describe('BrowserWindow module', () => {
           action: 'allow',
           overrideBrowserWindowOptions: {
             webPreferences: {
-              preload: preloadPath
-            }
-          }
+              preload: preloadPath,
+            },
+          },
         }));
         w.loadFile(path.join(fixtures, 'api', 'new-window.html'));
         const [, { nativeWindowOpen }] = await emittedOnce(ipcMain, 'answer');
@@ -2664,15 +2709,12 @@ describe('BrowserWindow module', () => {
           overrideBrowserWindowOptions: {
             webPreferences: {
               preload: preloadPath,
-              foo: 'bar'
-            }
-          }
+              foo: 'bar',
+            },
+          },
         }));
         w.loadFile(path.join(fixtures, 'api', 'new-window.html'));
-        const [[, childWebContents]] = await Promise.all([
-          emittedOnce(app, 'web-contents-created'),
-          emittedOnce(ipcMain, 'answer')
-        ]);
+        const [[, childWebContents]] = await Promise.all([emittedOnce(app, 'web-contents-created'), emittedOnce(ipcMain, 'answer')]);
         const webPreferences = childWebContents.getLastWebPreferences();
         expect(webPreferences.foo).to.equal('bar');
       });
@@ -2680,14 +2722,14 @@ describe('BrowserWindow module', () => {
       describe('window.location', () => {
         const protocols = [
           ['foo', path.join(fixtures, 'api', 'window-open-location-change.html')],
-          ['bar', path.join(fixtures, 'api', 'window-open-location-final.html')]
+          ['bar', path.join(fixtures, 'api', 'window-open-location-final.html')],
         ];
         beforeEach(() => {
           for (const [scheme, path] of protocols) {
             protocol.registerBufferProtocol(scheme, (request, callback) => {
               callback({
                 mimeType: 'text/html',
-                data: fs.readFileSync(path)
+                data: fs.readFileSync(path),
               });
             });
           }
@@ -2703,17 +2745,17 @@ describe('BrowserWindow module', () => {
             webPreferences: {
               nativeWindowOpen: true,
               // test relies on preloads in opened window
-              nodeIntegrationInSubFrames: true
-            }
+              nodeIntegrationInSubFrames: true,
+            },
           });
 
           w.webContents.setWindowOpenHandler(() => ({
             action: 'allow',
             overrideBrowserWindowOptions: {
               webPreferences: {
-                preload: path.join(fixtures, 'api', 'window-open-preload.js')
-              }
-            }
+                preload: path.join(fixtures, 'api', 'window-open-preload.js'),
+              },
+            },
           }));
 
           w.loadFile(path.join(fixtures, 'api', 'window-open-location-open.html'));
@@ -2729,17 +2771,17 @@ describe('BrowserWindow module', () => {
             webPreferences: {
               nativeWindowOpen: true,
               // test relies on preloads in opened window
-              nodeIntegrationInSubFrames: true
-            }
+              nodeIntegrationInSubFrames: true,
+            },
           });
 
           w.webContents.setWindowOpenHandler(() => ({
             action: 'allow',
             overrideBrowserWindowOptions: {
               webPreferences: {
-                preload: path.join(fixtures, 'api', 'window-open-preload.js')
-              }
-            }
+                preload: path.join(fixtures, 'api', 'window-open-preload.js'),
+              },
+            },
           }));
           w.loadFile(path.join(fixtures, 'api', 'window-open-location-open.html'));
           const [, { windowOpenerIsNull }] = await emittedOnce(ipcMain, 'answer');
@@ -2753,8 +2795,8 @@ describe('BrowserWindow module', () => {
         const w = new BrowserWindow({
           show: false,
           webPreferences: {
-            disableHtmlFullscreenWindowResize: true
-          }
+            disableHtmlFullscreenWindowResize: true,
+          },
         });
         await w.loadURL('about:blank');
         const size = w.getSize();
@@ -2774,8 +2816,8 @@ describe('BrowserWindow module', () => {
         webPreferences: {
           nativeWindowOpen: true,
           contextIsolation: true,
-          preload: path.join(fixtures, 'api', 'native-window-open-isolated-preload.js')
-        }
+          preload: path.join(fixtures, 'api', 'native-window-open-isolated-preload.js'),
+        },
       });
       w.loadFile(path.join(fixtures, 'api', 'native-window-open-isolated.html'));
       const [, content] = await emittedOnce(ipcMain, 'answer');
@@ -2784,7 +2826,7 @@ describe('BrowserWindow module', () => {
   });
 
   describe('beforeunload handler', function () {
-    let w: BrowserWindow = null as unknown as BrowserWindow;
+    let w: BrowserWindow = (null as unknown) as BrowserWindow;
     beforeEach(() => {
       w = new BrowserWindow({ show: false, webPreferences: { nodeIntegration: true } });
     });
@@ -2814,7 +2856,9 @@ describe('BrowserWindow module', () => {
     it('emits for each close attempt', async () => {
       await w.loadFile(path.join(__dirname, 'fixtures', 'api', 'beforeunload-false-prevent3.html'));
 
-      const destroyListener = () => { expect.fail('Close was not prevented'); };
+      const destroyListener = () => {
+        expect.fail('Close was not prevented');
+      };
       w.webContents.once('destroyed', destroyListener);
 
       w.webContents.executeJavaScript('installBeforeUnload(2)', true);
@@ -2836,7 +2880,9 @@ describe('BrowserWindow module', () => {
     it('emits for each reload attempt', async () => {
       await w.loadFile(path.join(__dirname, 'fixtures', 'api', 'beforeunload-false-prevent3.html'));
 
-      const navigationListener = () => { expect.fail('Reload was not prevented'); };
+      const navigationListener = () => {
+        expect.fail('Reload was not prevented');
+      };
       w.webContents.once('did-start-navigation', navigationListener);
 
       w.webContents.executeJavaScript('installBeforeUnload(2)', true);
@@ -2860,7 +2906,9 @@ describe('BrowserWindow module', () => {
     it('emits for each navigation attempt', async () => {
       await w.loadFile(path.join(__dirname, 'fixtures', 'api', 'beforeunload-false-prevent3.html'));
 
-      const navigationListener = () => { expect.fail('Reload was not prevented'); };
+      const navigationListener = () => {
+        expect.fail('Reload was not prevented');
+      };
       w.webContents.once('did-start-navigation', navigationListener);
 
       w.webContents.executeJavaScript('installBeforeUnload(2)', true);
@@ -2890,8 +2938,8 @@ describe('BrowserWindow module', () => {
         width: 100,
         height: 100,
         webPreferences: {
-          nodeIntegration: true
-        }
+          nodeIntegration: true,
+        },
       });
 
       let readyToShow = false;
@@ -2914,8 +2962,8 @@ describe('BrowserWindow module', () => {
         width: 100,
         height: 100,
         webPreferences: {
-          nodeIntegration: true
-        }
+          nodeIntegration: true,
+        },
       });
 
       w.loadFile(path.join(fixtures, 'pages', 'visibilitychange.html'));
@@ -2941,8 +2989,8 @@ describe('BrowserWindow module', () => {
         width: 100,
         height: 100,
         webPreferences: {
-          nodeIntegration: true
-        }
+          nodeIntegration: true,
+        },
       });
 
       w.loadFile(path.join(fixtures, 'pages', 'visibilitychange.html'));
@@ -2961,8 +3009,8 @@ describe('BrowserWindow module', () => {
         width: 100,
         height: 100,
         webPreferences: {
-          nodeIntegration: true
-        }
+          nodeIntegration: true,
+        },
       });
       w.loadFile(path.join(fixtures, 'pages', 'visibilitychange.html'));
       if (process.platform === 'darwin') {
@@ -2981,8 +3029,8 @@ describe('BrowserWindow module', () => {
         width: 100,
         height: 100,
         webPreferences: {
-          nodeIntegration: true
-        }
+          nodeIntegration: true,
+        },
       });
       w.loadFile(path.join(fixtures, 'pages', 'visibilitychange.html'));
 
@@ -3010,8 +3058,8 @@ describe('BrowserWindow module', () => {
         height: 100,
         webPreferences: {
           backgroundThrottling: false,
-          nodeIntegration: true
-        }
+          nodeIntegration: true,
+        },
       });
       w.loadFile(path.join(fixtures, 'pages', 'visibilitychange.html'));
       {
@@ -3178,8 +3226,7 @@ describe('BrowserWindow module', () => {
             // page load.
             return;
           }
-          if (rect.height === contentHeight && rect.width === contentWidth &&
-            !gotInitialFullSizeFrame) {
+          if (rect.height === contentHeight && rect.width === contentWidth && !gotInitialFullSizeFrame) {
             // The initial frame is full-size, but we're looking for a call
             // with just the dirty-rect. The next frame should be a smaller
             // rect.
@@ -3261,7 +3308,7 @@ describe('BrowserWindow module', () => {
     it('should restore the previous window size', () => {
       const w = new BrowserWindow({
         minWidth: 800,
-        width: 800
+        width: 800,
       });
 
       const initialSize = w.getSize();
@@ -3343,7 +3390,7 @@ describe('BrowserWindow module', () => {
       // eslint-disable-next-line no-new
       new BrowserWindow({
         modal: true,
-        parent: w
+        parent: w,
       });
       await sheetBegin;
     });
@@ -3352,7 +3399,7 @@ describe('BrowserWindow module', () => {
       const w = new BrowserWindow();
       const sheet = new BrowserWindow({
         modal: true,
-        parent: w
+        parent: w,
       });
       const sheetEnd = emittedOnce(w, 'sheet-end');
       sheet.close();
@@ -3432,7 +3479,7 @@ describe('BrowserWindow module', () => {
             height: 200,
             parent: parentWindow,
             modal: true,
-            show: false
+            show: false,
           });
 
           const twoShown = emittedOnce(two, 'show');
@@ -3448,7 +3495,7 @@ describe('BrowserWindow module', () => {
           height: 400,
           parent: parentWindow,
           modal: true,
-          show: false
+          show: false,
         });
 
         const oneShown = emittedOnce(one, 'show');
@@ -3512,7 +3559,7 @@ describe('BrowserWindow module', () => {
         frame: false,
         width: 300,
         height: 200,
-        show: false
+        show: false,
       });
 
       w.minimizable = false;
@@ -3592,7 +3639,7 @@ describe('BrowserWindow module', () => {
           show: false,
           frame: false,
           resizable: false,
-          transparent: true
+          transparent: true,
         });
         w.setContentSize(60, 60);
         expectBoundsEqual(w.getContentSize(), [60, 60]);
@@ -3604,16 +3651,18 @@ describe('BrowserWindow module', () => {
     });
 
     describe('loading main frame state', () => {
-      let server: http.Server = null as unknown as http.Server;
-      let serverUrl: string = null as unknown as string;
+      let server: http.Server = (null as unknown) as http.Server;
+      let serverUrl: string = (null as unknown) as string;
 
       before((done) => {
-        server = http.createServer((request, response) => {
-          response.end();
-        }).listen(0, '127.0.0.1', () => {
-          serverUrl = 'http://127.0.0.1:' + (server.address() as AddressInfo).port;
-          done();
-        });
+        server = http
+          .createServer((request, response) => {
+            response.end();
+          })
+          .listen(0, '127.0.0.1', () => {
+            serverUrl = 'http://127.0.0.1:' + (server.address() as AddressInfo).port;
+            done();
+          });
       });
 
       after(() => {
@@ -4230,7 +4279,7 @@ describe('BrowserWindow module', () => {
         typeofProcess: 'object',
         typeofArrayPush: 'function',
         typeofFunctionApply: 'function',
-        typeofPreloadExecuteJavaScriptProperty: 'undefined'
+        typeofPreloadExecuteJavaScriptProperty: 'undefined',
       },
       pageContext: {
         preloadProperty: 'undefined',
@@ -4240,8 +4289,8 @@ describe('BrowserWindow module', () => {
         typeofArrayPush: 'number',
         typeofFunctionApply: 'boolean',
         typeofPreloadExecuteJavaScriptProperty: 'number',
-        typeofOpenedWindow: 'object'
-      }
+        typeofOpenedWindow: 'object',
+      },
     };
 
     afterEach(closeAllWindows);
@@ -4251,8 +4300,8 @@ describe('BrowserWindow module', () => {
         show: false,
         webPreferences: {
           contextIsolation: true,
-          preload: path.join(fixtures, 'api', 'isolated-preload.js')
-        }
+          preload: path.join(fixtures, 'api', 'isolated-preload.js'),
+        },
       });
       const p = emittedOnce(ipcMain, 'isolated-world');
       iw.loadFile(path.join(fixtures, 'api', 'isolated.html'));
@@ -4264,8 +4313,8 @@ describe('BrowserWindow module', () => {
         show: false,
         webPreferences: {
           contextIsolation: true,
-          preload: path.join(fixtures, 'api', 'isolated-preload.js')
-        }
+          preload: path.join(fixtures, 'api', 'isolated-preload.js'),
+        },
       });
       await iw.loadFile(path.join(fixtures, 'api', 'isolated.html'));
       const isolatedWorld = emittedOnce(ipcMain, 'isolated-world');
@@ -4278,8 +4327,8 @@ describe('BrowserWindow module', () => {
         show: false,
         webPreferences: {
           contextIsolation: true,
-          preload: path.join(fixtures, 'api', 'isolated-preload.js')
-        }
+          preload: path.join(fixtures, 'api', 'isolated-preload.js'),
+        },
       });
       const browserWindowCreated = emittedOnce(app, 'browser-window-created');
       iw.loadFile(path.join(fixtures, 'pages', 'window-open.html'));
@@ -4292,8 +4341,8 @@ describe('BrowserWindow module', () => {
         webPreferences: {
           sandbox: true,
           contextIsolation: true,
-          preload: path.join(fixtures, 'api', 'isolated-preload.js')
-        }
+          preload: path.join(fixtures, 'api', 'isolated-preload.js'),
+        },
       });
       const p = emittedOnce(ipcMain, 'isolated-world');
       ws.loadFile(path.join(fixtures, 'api', 'isolated.html'));
@@ -4306,8 +4355,8 @@ describe('BrowserWindow module', () => {
         webPreferences: {
           sandbox: true,
           contextIsolation: true,
-          preload: path.join(fixtures, 'api', 'isolated-preload.js')
-        }
+          preload: path.join(fixtures, 'api', 'isolated-preload.js'),
+        },
       });
       await ws.loadFile(path.join(fixtures, 'api', 'isolated.html'));
       const isolatedWorld = emittedOnce(ipcMain, 'isolated-world');
@@ -4320,21 +4369,21 @@ describe('BrowserWindow module', () => {
         show: false,
         webPreferences: {
           contextIsolation: true,
-          preload: path.join(fixtures, 'api', 'isolated-fetch-preload.js')
-        }
+          preload: path.join(fixtures, 'api', 'isolated-fetch-preload.js'),
+        },
       });
       const p = emittedOnce(ipcMain, 'isolated-fetch-error');
       fetchWindow.loadURL('about:blank');
       const [, error] = await p;
       expect(error).to.equal('Failed to fetch');
     });
-    it('doesn\'t break ipc serialization', async () => {
+    it("doesn't break ipc serialization", async () => {
       const iw = new BrowserWindow({
         show: false,
         webPreferences: {
           contextIsolation: true,
-          preload: path.join(fixtures, 'api', 'isolated-preload.js')
-        }
+          preload: path.join(fixtures, 'api', 'isolated-preload.js'),
+        },
       });
       const p = emittedOnce(ipcMain, 'isolated-world');
       iw.loadURL('about:blank');
@@ -4354,8 +4403,8 @@ describe('BrowserWindow module', () => {
       const w = new BrowserWindow({
         show: false,
         webPreferences: {
-          nodeIntegration: true
-        }
+          nodeIntegration: true,
+        },
       });
 
       let count = 0;
@@ -4396,8 +4445,8 @@ describe('BrowserWindow module', () => {
         show: false,
         webPreferences: {
           backgroundThrottling: false,
-          offscreen: true
-        }
+          offscreen: true,
+        },
       });
     });
     afterEach(closeAllWindows);
@@ -4405,7 +4454,7 @@ describe('BrowserWindow module', () => {
     it('creates offscreen window with correct size', async () => {
       const paint = emittedOnce(w.webContents, 'paint');
       w.loadFile(path.join(fixtures, 'api', 'offscreen-rendering.html'));
-      const [,, data] = await paint;
+      const [, , data] = await paint;
       expect(data.constructor.name).to.equal('NativeImage');
       expect(data.isEmpty()).to.be.false('data is empty');
       const size = data.getSize();

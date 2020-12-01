@@ -9,7 +9,7 @@ import { defer, delay } from './spec-helpers';
 const kOneKiloByte = 1024;
 const kOneMegaByte = kOneKiloByte * kOneKiloByte;
 
-function randomBuffer (size: number, start: number = 0, end: number = 255) {
+function randomBuffer(size: number, start: number = 0, end: number = 255) {
   const range = 1 + end - start;
   const buffer = Buffer.allocUnsafe(size);
   for (let i = 0; i < size; ++i) {
@@ -18,12 +18,12 @@ function randomBuffer (size: number, start: number = 0, end: number = 255) {
   return buffer;
 }
 
-function randomString (length: number) {
+function randomString(length: number) {
   const buffer = randomBuffer(length, '0'.charCodeAt(0), 'z'.charCodeAt(0));
   return buffer.toString();
 }
 
-async function getResponse (urlRequest: Electron.ClientRequest) {
+async function getResponse(urlRequest: Electron.ClientRequest) {
   return new Promise<Electron.IncomingMessage>((resolve, reject) => {
     urlRequest.on('error', reject);
     urlRequest.on('abort', reject);
@@ -32,11 +32,11 @@ async function getResponse (urlRequest: Electron.ClientRequest) {
   });
 }
 
-async function collectStreamBody (response: Electron.IncomingMessage | http.IncomingMessage) {
+async function collectStreamBody(response: Electron.IncomingMessage | http.IncomingMessage) {
   return (await collectStreamBodyBuffer(response)).toString();
 }
 
-function collectStreamBodyBuffer (response: Electron.IncomingMessage | http.IncomingMessage) {
+function collectStreamBodyBuffer(response: Electron.IncomingMessage | http.IncomingMessage) {
   return new Promise<Buffer>((resolve, reject) => {
     response.on('error', reject);
     (response as NodeJS.EventEmitter).on('aborted', reject);
@@ -49,7 +49,7 @@ function collectStreamBodyBuffer (response: Electron.IncomingMessage | http.Inco
   });
 }
 
-function respondNTimes (fn: http.RequestListener, n: number): Promise<string> {
+function respondNTimes(fn: http.RequestListener, n: number): Promise<string> {
   return new Promise((resolve) => {
     const server = http.createServer((request, response) => {
       fn(request, response);
@@ -63,15 +63,15 @@ function respondNTimes (fn: http.RequestListener, n: number): Promise<string> {
       resolve(`http://127.0.0.1:${(server.address() as AddressInfo).port}`);
     });
     const sockets: Socket[] = [];
-    server.on('connection', s => sockets.push(s));
+    server.on('connection', (s) => sockets.push(s));
     defer(() => {
       server.close();
-      sockets.forEach(s => s.destroy());
+      sockets.forEach((s) => s.destroy());
     });
   });
 }
 
-function respondOnce (fn: http.RequestListener) {
+function respondOnce(fn: http.RequestListener) {
   return respondNTimes(fn, 1);
 }
 
@@ -104,7 +104,7 @@ respondOnce.toURL = (url: string, fn: http.RequestListener) => respondNTimes.toU
 
 respondNTimes.toSingleURL = (fn: http.RequestListener, n: number) => {
   const requestUrl = '/requestUrl';
-  return respondNTimes.toURL(requestUrl, fn, n).then(url => `${url}${requestUrl}`);
+  return respondNTimes.toURL(requestUrl, fn, n).then((url) => `${url}${requestUrl}`);
 };
 respondOnce.toSingleURL = (fn: http.RequestListener) => respondNTimes.toSingleURL(fn, 1);
 
@@ -116,7 +116,9 @@ describe('net module', () => {
     await session.defaultSession.clearCache();
     if (routeFailure && this.test) {
       if (!this.test.isFailed()) {
-        throw new Error('Failing this test due an unhandled error in the respondOnce route handler, check the logs above for the actual error');
+        throw new Error(
+          'Failing this test due an unhandled error in the respondOnce route handler, check the logs above for the actual error',
+        );
       }
     }
   });
@@ -140,7 +142,7 @@ describe('net module', () => {
       });
       const urlRequest = net.request({
         method: 'POST',
-        url: serverUrl
+        url: serverUrl,
       });
       const response = await getResponse(urlRequest);
       expect(response.statusCode).to.equal(200);
@@ -169,7 +171,7 @@ describe('net module', () => {
       });
       const urlRequest = net.request({
         method: 'POST',
-        url: serverUrl
+        url: serverUrl,
       });
       urlRequest.write(bodyData);
       const response = await getResponse(urlRequest);
@@ -193,7 +195,7 @@ describe('net module', () => {
       });
       const urlRequest = net.request({
         method: 'POST',
-        url: serverUrl
+        url: serverUrl,
       });
 
       let chunkIndex = 0;
@@ -215,7 +217,11 @@ describe('net module', () => {
       expect(chunkIndex).to.be.equal(chunkCount);
     });
 
-    for (const extraOptions of [{}, { credentials: 'include' }, { useSessionCookies: false, credentials: 'include' }] as ClientRequestConstructorOptions[]) {
+    for (const extraOptions of [
+      {},
+      { credentials: 'include' },
+      { useSessionCookies: false, credentials: 'include' },
+    ] as ClientRequestConstructorOptions[]) {
       describe(`authentication when ${JSON.stringify(extraOptions)}`, () => {
         it('should emit the login event when 401', async () => {
           const [user, pass] = ['user', 'pass'];
@@ -290,7 +296,10 @@ describe('net module', () => {
             return response.writeHead(200).end('ok');
           }, 2);
           const customSession = session.fromPartition(`net-proxy-test-${Math.random()}`);
-          await customSession.setProxy({ proxyRules: proxyUrl.replace('http://', ''), proxyBypassRules: '<-loopback>' });
+          await customSession.setProxy({
+            proxyRules: proxyUrl.replace('http://', ''),
+            proxyBypassRules: '<-loopback>',
+          });
           const bw = new BrowserWindow({ show: false, webPreferences: { session: customSession } });
           bw.webContents.on('login', (event, details, authInfo, cb) => {
             event.preventDefault();
@@ -298,7 +307,12 @@ describe('net module', () => {
           });
           await bw.loadURL('http://127.0.0.1:9999');
           bw.close();
-          const request = net.request({ method: 'GET', url: 'http://127.0.0.1:9999', session: customSession, ...extraOptions });
+          const request = net.request({
+            method: 'GET',
+            url: 'http://127.0.0.1:9999',
+            session: customSession,
+            ...extraOptions,
+          });
           let logInCount = 0;
           request.on('login', () => {
             logInCount++;
@@ -383,7 +397,10 @@ describe('net module', () => {
           return response.writeHead(200).end('ok');
         }, 2);
         const customSession = session.fromPartition(`net-proxy-test-${Math.random()}`);
-        await customSession.setProxy({ proxyRules: proxyUrl.replace('http://', ''), proxyBypassRules: '<-loopback>' });
+        await customSession.setProxy({
+          proxyRules: proxyUrl.replace('http://', ''),
+          proxyBypassRules: '<-loopback>',
+        });
         const bw = new BrowserWindow({ show: false, webPreferences: { session: customSession } });
         bw.webContents.on('login', (event, details, authInfo, cb) => {
           event.preventDefault();
@@ -391,7 +408,12 @@ describe('net module', () => {
         });
         await bw.loadURL('http://127.0.0.1:9999');
         bw.close();
-        const request = net.request({ method: 'GET', url: 'http://127.0.0.1:9999', session: customSession, credentials: 'omit' });
+        const request = net.request({
+          method: 'GET',
+          url: 'http://127.0.0.1:9999',
+          session: customSession,
+          credentials: 'omit',
+        });
         request.on('login', () => {
           expect.fail();
         });
@@ -592,12 +614,12 @@ describe('net module', () => {
         url: `${serverUrl}`,
         name: 'test',
         value: '11111',
-        expirationDate: 0
+        expirationDate: 0,
       });
       const urlRequest = net.request({
         method: 'GET',
         url: serverUrl,
-        session: customSession
+        session: customSession,
       });
       urlRequest.setHeader(cookieHeaderName, cookieHeaderValue);
       expect(urlRequest.getHeader(cookieHeaderName)).to.equal(cookieHeaderValue);
@@ -631,11 +653,11 @@ describe('net module', () => {
       await sess.cookies.set({
         url: serverUrl,
         name: 'wild_cookie',
-        value: cookieVal
+        value: cookieVal,
       });
       const urlRequest = net.request({
         url: serverUrl,
-        session: sess
+        session: sess,
       });
       const response = await getResponse(urlRequest);
       expect(response.headers['x-cookie']).to.equal('undefined');
@@ -655,12 +677,12 @@ describe('net module', () => {
           await sess.cookies.set({
             url: serverUrl,
             name: 'wild_cookie',
-            value: cookieVal
+            value: cookieVal,
           });
           const urlRequest = net.request({
             url: serverUrl,
             session: sess,
-            ...extraOptions
+            ...extraOptions,
           });
           const response = await getResponse(urlRequest);
           expect(response.headers['x-cookie']).to.equal(`wild_cookie=${cookieVal}`);
@@ -679,7 +701,7 @@ describe('net module', () => {
           const urlRequest = net.request({
             url: serverUrl,
             session: sess,
-            ...extraOptions
+            ...extraOptions,
           });
           await collectStreamBody(await getResponse(urlRequest));
           cookies = await sess.cookies.get({});
@@ -693,7 +715,7 @@ describe('net module', () => {
             secure: false,
             httpOnly: false,
             session: true,
-            sameSite: 'unspecified'
+            sameSite: 'unspecified',
           });
         });
 
@@ -712,7 +734,7 @@ describe('net module', () => {
             const urlRequest = net.request({
               url: serverUrl,
               session: sess,
-              ...extraOptions
+              ...extraOptions,
             });
             const response = await getResponse(urlRequest);
             expect(response.headers['x-cookie']).to.equal('undefined');
@@ -728,12 +750,12 @@ describe('net module', () => {
               secure: false,
               httpOnly: false,
               session: true,
-              sameSite: mode.toLowerCase()
+              sameSite: mode.toLowerCase(),
             });
             const urlRequest2 = net.request({
               url: serverUrl,
               session: sess,
-              ...extraOptions
+              ...extraOptions,
             });
             const response2 = await getResponse(urlRequest2);
             expect(response2.headers['x-cookie']).to.equal('same=site');
@@ -763,17 +785,18 @@ describe('net module', () => {
             sess.cookies.set({
               url: serverUrl,
               name: 'wild_cookie',
-              value: cookie127Val
-            }), sess.cookies.set({
+              value: cookie127Val,
+            }),
+            sess.cookies.set({
               url: localhostUrl,
               name: 'wild_cookie',
-              value: cookieLocalVal
-            })
+              value: cookieLocalVal,
+            }),
           ]);
           const urlRequest = net.request({
             url: serverUrl,
             session: sess,
-            ...extraOptions
+            ...extraOptions,
           });
           urlRequest.on('redirect', (status, method, url, headers) => {
             // The initial redirect response should have received the 127 value here
@@ -806,7 +829,7 @@ describe('net module', () => {
       });
       const urlRequest = net.request({
         url: serverUrl,
-        origin: serverUrl
+        origin: serverUrl,
       });
       await collectStreamBody(await getResponse(urlRequest));
     });
@@ -819,7 +842,7 @@ describe('net module', () => {
         response.end();
       });
       const urlRequest = net.request({
-        url: serverUrl
+        url: serverUrl,
       });
       urlRequest.setHeader('Origin', serverUrl);
       await collectStreamBody(await getResponse(urlRequest));
@@ -834,7 +857,7 @@ describe('net module', () => {
       });
       const urlRequest = net.request({
         url: serverUrl,
-        origin: 'https://not-exists.com'
+        origin: 'https://not-exists.com',
       });
       await collectStreamBody(await getResponse(urlRequest));
     });
@@ -847,7 +870,7 @@ describe('net module', () => {
         response.end();
       });
       const urlRequest = net.request({
-        url: serverUrl
+        url: serverUrl,
       });
       await collectStreamBody(await getResponse(urlRequest));
     });
@@ -860,7 +883,7 @@ describe('net module', () => {
         response.end();
       });
       const urlRequest = net.request({
-        url: serverUrl
+        url: serverUrl,
       });
       urlRequest.setHeader('sec-fetch-user', '?1');
       await collectStreamBody(await getResponse(urlRequest));
@@ -874,7 +897,7 @@ describe('net module', () => {
         response.end();
       });
       const urlRequest = net.request({
-        url: serverUrl
+        url: serverUrl,
       });
       await collectStreamBody(await getResponse(urlRequest));
     });
@@ -889,7 +912,7 @@ describe('net module', () => {
         });
         const urlRequest = net.request({
           url: serverUrl,
-          origin: serverUrl
+          origin: serverUrl,
         });
         urlRequest.setHeader('sec-fetch-mode', mode);
         await collectStreamBody(await getResponse(urlRequest));
@@ -904,16 +927,32 @@ describe('net module', () => {
         response.end();
       });
       const urlRequest = net.request({
-        url: serverUrl
+        url: serverUrl,
       });
       await collectStreamBody(await getResponse(urlRequest));
     });
 
     [
-      'empty', 'audio', 'audioworklet', 'document', 'embed', 'font',
-      'frame', 'iframe', 'image', 'manifest', 'object', 'paintworklet',
-      'report', 'script', 'serviceworker', 'style', 'track', 'video',
-      'worker', 'xslt'
+      'empty',
+      'audio',
+      'audioworklet',
+      'document',
+      'embed',
+      'font',
+      'frame',
+      'iframe',
+      'image',
+      'manifest',
+      'object',
+      'paintworklet',
+      'report',
+      'script',
+      'serviceworker',
+      'style',
+      'track',
+      'video',
+      'worker',
+      'xslt',
     ].forEach((dest) => {
       it(`should set sec-fetch-dest to ${dest} if requested`, async () => {
         const serverUrl = await respondOnce.toSingleURL((request, response) => {
@@ -924,7 +963,7 @@ describe('net module', () => {
         });
         const urlRequest = net.request({
           url: serverUrl,
-          origin: serverUrl
+          origin: serverUrl,
         });
         urlRequest.setHeader('sec-fetch-dest', dest);
         await collectStreamBody(await getResponse(urlRequest));
@@ -1091,16 +1130,16 @@ describe('net module', () => {
       });
 
       const urlRequest = net.request(serverUrl);
-      const bodyCheckPromise = getResponse(urlRequest).then(r => {
-        expect(r.statusCode).to.equal(404);
-        return r;
-      }).then(collectStreamBody).then(receivedBodyData => {
-        expect(receivedBodyData.toString()).to.equal(bodyData);
-      });
-      const eventHandlers = Promise.all([
-        bodyCheckPromise,
-        emittedOnce(urlRequest, 'close')
-      ]);
+      const bodyCheckPromise = getResponse(urlRequest)
+        .then((r) => {
+          expect(r.statusCode).to.equal(404);
+          return r;
+        })
+        .then(collectStreamBody)
+        .then((receivedBodyData) => {
+          expect(receivedBodyData.toString()).to.equal(bodyData);
+        });
+      const eventHandlers = Promise.all([bodyCheckPromise, emittedOnce(urlRequest, 'close')]);
 
       urlRequest.end();
 
@@ -1114,26 +1153,26 @@ describe('net module', () => {
 
       it('Should throw when invalid filters are passed', () => {
         expect(() => {
-          session.defaultSession.webRequest.onBeforeRequest(
-            { urls: ['*://www.googleapis.com'] },
-            (details, callback) => { callback({ cancel: false }); }
-          );
+          session.defaultSession.webRequest.onBeforeRequest({ urls: ['*://www.googleapis.com'] }, (details, callback) => {
+            callback({ cancel: false });
+          });
         }).to.throw('Invalid url pattern *://www.googleapis.com: Empty path.');
 
         expect(() => {
           session.defaultSession.webRequest.onBeforeRequest(
             { urls: ['*://www.googleapis.com/', '*://blahblah.dev'] },
-            (details, callback) => { callback({ cancel: false }); }
+            (details, callback) => {
+              callback({ cancel: false });
+            },
           );
         }).to.throw('Invalid url pattern *://blahblah.dev: Empty path.');
       });
 
       it('Should not throw when valid filters are passed', () => {
         expect(() => {
-          session.defaultSession.webRequest.onBeforeRequest(
-            { urls: ['*://www.googleapis.com/'] },
-            (details, callback) => { callback({ cancel: false }); }
-          );
+          session.defaultSession.webRequest.onBeforeRequest({ urls: ['*://www.googleapis.com/'] }, (details, callback) => {
+            callback({ cancel: false });
+          });
         }).to.not.throw();
       });
 
@@ -1146,21 +1185,20 @@ describe('net module', () => {
           response.end();
         });
         let requestIsIntercepted = false;
-        session.defaultSession.webRequest.onBeforeRequest(
-          (details, callback) => {
-            if (details.url === `${serverUrl}${requestUrl}`) {
-              requestIsIntercepted = true;
-              // Disabled due to false positive in StandardJS
-              // eslint-disable-next-line standard/no-callback-literal
-              callback({
-                redirectURL: `${serverUrl}${redirectUrl}`
-              });
-            } else {
-              callback({
-                cancel: false
-              });
-            }
-          });
+        session.defaultSession.webRequest.onBeforeRequest((details, callback) => {
+          if (details.url === `${serverUrl}${requestUrl}`) {
+            requestIsIntercepted = true;
+            // Disabled due to false positive in StandardJS
+            // eslint-disable-next-line standard/no-callback-literal
+            callback({
+              redirectURL: `${serverUrl}${redirectUrl}`,
+            });
+          } else {
+            callback({
+              cancel: false,
+            });
+          }
+        });
 
         const urlRequest = net.request(`${serverUrl}${requestUrl}`);
         const response = await getResponse(urlRequest);
@@ -1192,18 +1230,18 @@ describe('net module', () => {
             // Disabled due to false positive in StandardJS
             // eslint-disable-next-line standard/no-callback-literal
             callback({
-              redirectURL: `${serverUrl}${redirectUrl}`
+              redirectURL: `${serverUrl}${redirectUrl}`,
             });
           } else {
             callback({
-              cancel: false
+              cancel: false,
             });
           }
         });
 
         const urlRequest = net.request({
           url: `${serverUrl}${requestUrl}`,
-          session: customSession
+          session: customSession,
         });
         const response = await getResponse(urlRequest);
         expect(response.statusCode).to.equal(200);
@@ -1233,18 +1271,18 @@ describe('net module', () => {
             // Disabled due to false positive in StandardJS
             // eslint-disable-next-line standard/no-callback-literal
             callback({
-              redirectURL: `${serverUrl}${redirectUrl}`
+              redirectURL: `${serverUrl}${redirectUrl}`,
             });
           } else {
             callback({
-              cancel: false
+              cancel: false,
             });
           }
         });
 
         const urlRequest = net.request({
           url: `${serverUrl}${requestUrl}`,
-          partition: customPartitionName
+          partition: customPartitionName,
         });
         const response = await getResponse(urlRequest);
         expect(response.statusCode).to.equal(200);
@@ -1285,10 +1323,10 @@ describe('net module', () => {
         '/200': (request, response) => {
           response.statusCode = 200;
           response.end();
-        }
+        },
       });
       const urlRequest = net.request({
-        url: `${serverUrl}${requestUrl}`
+        url: `${serverUrl}${requestUrl}`,
       });
       const response = await getResponse(urlRequest);
       expect(response.statusCode).to.equal(200);
@@ -1309,10 +1347,10 @@ describe('net module', () => {
         '/200': (request, response) => {
           response.statusCode = 200;
           response.end();
-        }
+        },
       });
       const urlRequest = net.request({
-        url: `${serverUrl}/redirectChain`
+        url: `${serverUrl}/redirectChain`,
       });
       const response = await getResponse(urlRequest);
       expect(response.statusCode).to.equal(200);
@@ -1325,10 +1363,12 @@ describe('net module', () => {
         response.end();
       });
       const urlRequest = net.request({
-        url: serverUrl
+        url: serverUrl,
       });
       urlRequest.end();
-      urlRequest.on('redirect', () => { urlRequest.abort(); });
+      urlRequest.on('redirect', () => {
+        urlRequest.abort();
+      });
       urlRequest.on('error', () => {});
       await emittedOnce(urlRequest, 'abort');
     });
@@ -1341,7 +1381,7 @@ describe('net module', () => {
       });
       const urlRequest = net.request({
         url: serverUrl,
-        redirect: 'error'
+        redirect: 'error',
       });
       urlRequest.end();
       await emittedOnce(urlRequest, 'error');
@@ -1362,7 +1402,7 @@ describe('net module', () => {
         '/200': (request, response) => {
           response.statusCode = 200;
           response.end();
-        }
+        },
       });
       const urlRequest = net.request({ url: `${serverUrl}/redirectChain`, redirect: 'manual' });
       const redirects: string[] = [];
@@ -1372,17 +1412,14 @@ describe('net module', () => {
       });
       const response = await getResponse(urlRequest);
       expect(response.statusCode).to.equal(200);
-      expect(redirects).to.deep.equal([
-        `${serverUrl}/302`,
-        `${serverUrl}/200`
-      ]);
+      expect(redirects).to.deep.equal([`${serverUrl}/302`, `${serverUrl}/200`]);
     });
 
     it('should throw if given an invalid session option', () => {
       expect(() => {
         net.request({
           url: 'https://foo',
-          session: 1 as any
+          session: 1 as any,
         });
       }).to.throw('`session` should be an instance of the Session class');
     });
@@ -1391,7 +1428,7 @@ describe('net module', () => {
       expect(() => {
         net.request({
           url: 'https://foo',
-          partition: 1 as any
+          partition: 1 as any,
         });
       }).to.throw('`partition` should be a string');
     });
@@ -1410,7 +1447,7 @@ describe('net module', () => {
       const options = {
         port: serverUrl.port ? parseInt(serverUrl.port, 10) : undefined,
         hostname: '127.0.0.1',
-        headers: { [customHeaderName]: customHeaderValue }
+        headers: { [customHeaderName]: customHeaderValue },
       };
       const urlRequest = net.request(options);
       const response = await getResponse(urlRequest);
@@ -1439,10 +1476,10 @@ describe('net module', () => {
             expect(receivedBodyData).to.be.equal(bodyData);
             response.end();
           });
-        })
+        }),
       ]);
       const nodeRequest = http.request(nodeServerUrl);
-      const nodeResponse = await getResponse(nodeRequest as any) as any as http.ServerResponse;
+      const nodeResponse = ((await getResponse(nodeRequest as any)) as any) as http.ServerResponse;
       const netRequest = net.request(netServerUrl);
       const responsePromise = emittedOnce(netRequest, 'response');
       // TODO(@MarshallOfSound) - FIXME with #22730
@@ -1462,7 +1499,12 @@ describe('net module', () => {
       expect(netRequest.getUploadProgress()).to.have.property('active', false);
       netRequest.end(Buffer.from('hello'));
       const [position, total] = await emittedOnce(netRequest, 'upload-progress');
-      expect(netRequest.getUploadProgress()).to.deep.equal({ active: true, started: true, current: position, total });
+      expect(netRequest.getUploadProgress()).to.deep.equal({
+        active: true,
+        started: true,
+        current: position,
+        total,
+      });
     });
 
     it('should emit error event on server socket destroy', async () => {
@@ -1496,7 +1538,7 @@ describe('net module', () => {
 
       await emittedOnce(urlRequest, 'close');
       await new Promise((resolve, reject) => {
-        ['finish', 'abort', 'close', 'error'].forEach(evName => {
+        ['finish', 'abort', 'close', 'error'].forEach((evName) => {
           urlRequest.on(evName as any, () => {
             reject(new Error(`Unexpected ${evName} event`));
           });
@@ -1632,7 +1674,7 @@ describe('net module', () => {
           expect(receivedBodyData).to.be.equal(bodyData);
           nodeRequestProcessed = true;
           response.end();
-        })
+        }),
       ]);
       const netRequest = net.request(netServerUrl);
       const netResponse = await getResponse(netRequest);
@@ -1640,7 +1682,7 @@ describe('net module', () => {
       const nodeOptions = {
         method: 'POST',
         path: serverUrl.path,
-        port: serverUrl.port
+        port: serverUrl.port,
       };
       const nodeRequest = http.request(nodeOptions);
       const nodeResponsePromise = emittedOnce(nodeRequest, 'response');
