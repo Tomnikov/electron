@@ -53,6 +53,7 @@
     "nugget": "^2.0.1",
     "null-loader": "^4.0.0",
     "pre-flight": "^1.1.0",
+    "prettier": "^2.2.1",
     "remark-cli": "^4.0.0",
     "remark-preset-lint-markdown-style-guide": "^2.1.1",
     "request": "^2.88.2",
@@ -77,6 +78,7 @@
     "generate-version-json": "node script/generate-version-json.js",
     "lint": "node ./script/lint.js && npm run lint:clang-format && npm run lint:docs",
     "lint:js": "node ./script/lint.js --js",
+    "prettier:js": "prettier --write \"{lib,build,script,spec,spec-main,default_app,npm}/**/*.{ts,js}\"",
     "lint:clang-format": "python script/run-clang-format.py -r -c chromium_src/ shell/ || (echo \"\\nCode not formatted correctly.\" && exit 1)",
     "lint:clang-tidy": "ts-node ./script/run-clang-tidy.ts",
     "lint:cpp": "node ./script/lint.js --cc",
@@ -113,7 +115,8 @@
   },
   "lint-staged": {
     "*.{js,ts}": [
-      "node script/lint.js --js --fix --only --"
+      "node script/lint.js --js --fix --only --",
+      "prettier --write"
     ],
     "*.{js,ts,d.ts}": [
       "ts-node script/gen-filenames.ts"
